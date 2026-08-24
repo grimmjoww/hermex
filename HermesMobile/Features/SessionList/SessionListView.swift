@@ -1436,6 +1436,7 @@ private struct PendingNewChatView: View {
     @State private var createdSession: SessionSummary?
     @State private var draftMessage = ""
     @State private var didStartCreation = false
+    @State private var didStartConversation = false
     @State private var didRequestComposerFocus = false
     @State private var creationErrorMessage: String?
     @FocusState private var composerIsFocused: Bool
@@ -1473,7 +1474,8 @@ private struct PendingNewChatView: View {
                     initialAttachments: initialAttachments,
                     loadsInitialMessages: false,
                     autoStartsVoiceInput: autoStartsVoiceInput,
-                    draftStore: draftStore
+                    draftStore: draftStore,
+                    onConversationStarted: markConversationStarted
                 )
             } else {
                 pendingContent
@@ -1493,6 +1495,7 @@ private struct PendingNewChatView: View {
             }
         }
         .onDisappear {
+            restoreAbandonedDraftIfNeeded()
             flushDraftsBestEffort()
         }
     }
@@ -1589,12 +1592,7 @@ private struct PendingNewChatView: View {
         }
 
         if let session {
-            let normalizedSessionID = session.sessionId?.trimmingCharacters(in: .whitespacesAndNewlines)
-            let sessionID = normalizedSessionID.flatMap { $0.isEmpty ? nil : $0 } ?? session.id
-            let sessionKey = ChatDraftKey.session(
-                server: server,
-                sessionID: sessionID
-            )
+            let sessionKey = draftKey(for: session)
             draftStore.setDraft(draftMessage, for: draftKey)
             draftMessage = draftStore.moveDraft(from: draftKey, to: sessionKey)
             SessionHaptics.sessionCreated(isEnabled: isHapticsEnabled)
@@ -1618,6 +1616,12 @@ private struct PendingNewChatView: View {
 
     private var draftKey: ChatDraftKey {
         .newChat(server: server)
+    }
+
+    private func draftKey(for session: SessionSummary) -> ChatDraftKey {
+        let normalizedSessionID = session.sessionId?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let sessionID = normalizedSessionID.flatMap { $0.isEmpty ? nil : $0 } ?? session.id
+        return .session(server: server, sessionID: sessionID)
     }
 
     private var persistedDraftBinding: Binding<String> {
@@ -1654,6 +1658,19 @@ private struct PendingNewChatView: View {
         Task {
             try? await draftStore.flush()
         }
+    }
+
+    private func markConversationStarted() {
+        didStartConversation = true
+    }
+
+    private func restoreAbandonedDraftIfNeeded() {
+        guard let createdSession else { return }
+        draftMessage = draftStore.restoreAbandonedNewChatDraft(
+            from: draftKey(for: createdSession),
+            to: draftKey,
+            didStartConversation: didStartConversation
+        ) ?? draftMessage
     }
 
     private func requestPendingComposerFocus() {

@@ -282,6 +282,7 @@ struct ChatView: View {
     /// "New Chat with Voice" App Intent (#338). Defaults to false for normal opens.
     let autoStartsVoiceInput: Bool
     let draftStore: ChatDraftStore
+    let onConversationStarted: () -> Void
 
     @State private var draftMessage = ""
     @State private var draftRevision = 0
@@ -335,7 +336,8 @@ struct ChatView: View {
         initialAttachments: [SharedAttachmentImport] = [],
         loadsInitialMessages: Bool = true,
         autoStartsVoiceInput: Bool = false,
-        draftStore: ChatDraftStore? = nil
+        draftStore: ChatDraftStore? = nil,
+        onConversationStarted: @escaping () -> Void = {}
     ) {
         self.session = session
         self.server = server
@@ -343,6 +345,7 @@ struct ChatView: View {
         self.loadsInitialMessages = loadsInitialMessages
         self.autoStartsVoiceInput = autoStartsVoiceInput
         self.draftStore = draftStore ?? .shared
+        self.onConversationStarted = onConversationStarted
         _draftMessage = State(initialValue: initialDraft)
         _initialAttachments = State(initialValue: initialAttachments)
         _viewModel = State(initialValue: ChatViewModel(
@@ -1500,6 +1503,7 @@ struct ChatView: View {
         )
 
         if didSend {
+            onConversationStarted()
             ChatHaptics.messageSent(isEnabled: isHapticsEnabled)
         }
 
@@ -1522,6 +1526,9 @@ struct ChatView: View {
         draftMessage = ""
 
         let didStart = await viewModel.sendMessage(submittedDraft, modelContext: modelContext)
+        if didStart {
+            onConversationStarted()
+        }
         draftMessage = draftStore.resolveSubmission(
             submittedText: submittedDraft,
             currentText: draftMessage,

@@ -110,6 +110,46 @@ final class ChatDraftStoreTests: XCTestCase {
         XCTAssertEqual(restoredCreatedChat, "Carry this forward")
     }
 
+    func testAbandonedCreatedChatDraftReturnsToNewChat() async throws {
+        let persistence = RecordingChatDraftPersistence()
+        let store = ChatDraftStore(persistence: persistence, debounceDuration: .seconds(10))
+        let server = URL(string: "https://example.com")!
+        let newChat = ChatDraftKey.newChat(server: server)
+        let createdChat = ChatDraftKey.session(server: server, sessionID: "created-chat")
+
+        store.setDraft("Started before creation", for: newChat)
+        _ = store.moveDraft(from: newChat, to: createdChat)
+        store.setDraft("Typed after creation", for: createdChat)
+
+        XCTAssertEqual(
+            store.restoreAbandonedNewChatDraft(
+                from: createdChat,
+                to: newChat,
+                didStartConversation: false
+            ),
+            "Typed after creation"
+        )
+        let abandonedSessionDraft = await store.draft(for: createdChat)
+        let restoredNewChatDraft = await store.draft(for: newChat)
+        XCTAssertNil(abandonedSessionDraft)
+        XCTAssertEqual(restoredNewChatDraft, "Typed after creation")
+
+        _ = store.moveDraft(from: newChat, to: createdChat)
+        store.setDraft("Follow-up for the started chat", for: createdChat)
+
+        XCTAssertNil(
+            store.restoreAbandonedNewChatDraft(
+                from: createdChat,
+                to: newChat,
+                didStartConversation: true
+            )
+        )
+        let startedSessionDraft = await store.draft(for: createdChat)
+        let startedNewChatDraft = await store.draft(for: newChat)
+        XCTAssertEqual(startedSessionDraft, "Follow-up for the started chat")
+        XCTAssertNil(startedNewChatDraft)
+    }
+
     func testSubmissionFailureRestoresExactSnapshotAndSuccessClearsIt() async throws {
         let persistence = RecordingChatDraftPersistence()
         let store = ChatDraftStore(persistence: persistence, debounceDuration: .seconds(10))

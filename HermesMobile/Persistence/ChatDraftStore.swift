@@ -276,6 +276,16 @@ final class ChatDraftStore {
         return movedText
     }
 
+    @discardableResult
+    func restoreAbandonedNewChatDraft(
+        from sessionKey: ChatDraftKey,
+        to newChatKey: ChatDraftKey,
+        didStartConversation: Bool
+    ) -> String? {
+        guard !didStartConversation else { return nil }
+        return moveDraft(from: sessionKey, to: newChatKey)
+    }
+
     func flush() async throws {
         persistTask?.cancel()
         persistTask = nil
