@@ -1421,6 +1421,7 @@ private struct ActiveSessionMonitorTaskID: Hashable {
 
 private struct PendingNewChatView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
     @AppStorage(AppHaptics.isEnabledKey) private var isHapticsEnabled = true
 
     let server: URL
@@ -1430,6 +1431,7 @@ private struct PendingNewChatView: View {
     let initialAttachments: [SharedAttachmentImport]
     let autoStartsVoiceInput: Bool
     let profileName: String?
+    let draftStore: ChatDraftStore
 
     @State private var createdSession: SessionSummary?
     @State private var draftMessage = ""
@@ -1446,7 +1448,8 @@ private struct PendingNewChatView: View {
         server: URL,
         viewModel: SessionListViewModel,
         onAPIError: @escaping (Error) -> Void,
-        onSessionCreated: @escaping (SessionSummary) -> Void = { _ in }
+        onSessionCreated: @escaping (SessionSummary) -> Void = { _ in },
+        draftStore: ChatDraftStore? = nil
     ) {
         self.server = server
         self.viewModel = viewModel
@@ -1455,6 +1458,7 @@ private struct PendingNewChatView: View {
         self.initialAttachments = initialAttachments
         self.autoStartsVoiceInput = autoStartsVoiceInput
         self.profileName = profileName
+        self.draftStore = draftStore ?? .shared
         _draftMessage = State(initialValue: initialDraft)
     }
 
@@ -1468,7 +1472,8 @@ private struct PendingNewChatView: View {
                     initialDraft: draftMessage,
                     initialAttachments: initialAttachments,
                     loadsInitialMessages: false,
-                    autoStartsVoiceInput: autoStartsVoiceInput
+                    autoStartsVoiceInput: autoStartsVoiceInput,
+                    draftStore: draftStore
                 )
             } else {
                 pendingContent
@@ -1480,7 +1485,15 @@ private struct PendingNewChatView: View {
                 .accessibilityHidden(true)
         )
         .task {
-            await createSessionIfNeeded()
+            await prepareNewChat()
+        }
+        .onChange(of: scenePhase) {
+            if scenePhase != .active {
+                flushDraftsBestEffort()
+            }
+        }
+        .onDisappear {
+            flushDraftsBestEffort()
         }
     }
 
@@ -1515,7 +1528,7 @@ private struct PendingNewChatView: View {
 
     private var pendingComposer: some View {
         HStack(alignment: .bottom, spacing: 10) {
-            TextField("Message Hermex", text: $draftMessage, axis: .vertical)
+            TextField("Message Hermex", text: persistedDraftBinding, axis: .vertical)
                 .textFieldStyle(.plain)
                 .lineLimit(1...5)
                 .focused($composerIsFocused)
@@ -1576,6 +1589,14 @@ private struct PendingNewChatView: View {
         }
 
         if let session {
+            let normalizedSessionID = session.sessionId?.trimmingCharacters(in: .whitespacesAndNewlines)
+            let sessionID = normalizedSessionID.flatMap { $0.isEmpty ? nil : $0 } ?? session.id
+            let sessionKey = ChatDraftKey.session(
+                server: server,
+                sessionID: sessionID
+            )
+            draftStore.setDraft(draftMessage, for: draftKey)
+            draftMessage = draftStore.moveDraft(from: draftKey, to: sessionKey)
             SessionHaptics.sessionCreated(isEnabled: isHapticsEnabled)
             onSessionCreated(session)
             createdSession = session
@@ -1593,6 +1614,46 @@ private struct PendingNewChatView: View {
         creationErrorMessage = nil
         viewModel.clearActionError()
         await createSessionIfNeeded()
+    }
+
+    private var draftKey: ChatDraftKey {
+        .newChat(server: server)
+    }
+
+    private var persistedDraftBinding: Binding<String> {
+        Binding(
+            get: { draftMessage },
+            set: { newValue in
+                draftMessage = newValue
+                draftStore.setDraft(newValue, for: draftKey)
+            }
+        )
+    }
+
+    private func prepareNewChat() async {
+        await hydrateDraft()
+        guard !Task.isCancelled else { return }
+        await createSessionIfNeeded()
+    }
+
+    private func hydrateDraft() async {
+        let textBeforeHydration = draftMessage
+        let persistedDraft = await draftStore.draft(for: draftKey)
+        guard !Task.isCancelled, draftMessage == textBeforeHydration else { return }
+
+        if textBeforeHydration.isEmpty {
+            if let persistedDraft {
+                draftMessage = persistedDraft
+            }
+        } else {
+            draftStore.setDraft(textBeforeHydration, for: draftKey)
+        }
+    }
+
+    private func flushDraftsBestEffort() {
+        Task {
+            try? await draftStore.flush()
+        }
     }
 
     private func requestPendingComposerFocus() {

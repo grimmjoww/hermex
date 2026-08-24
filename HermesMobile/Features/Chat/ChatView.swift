@@ -281,6 +281,7 @@ struct ChatView: View {
     /// When true, the composer auto-starts voice dictation on appear — set by the
     /// "New Chat with Voice" App Intent (#338). Defaults to false for normal opens.
     let autoStartsVoiceInput: Bool
+    let draftStore: ChatDraftStore
 
     @State private var draftMessage = ""
     @State private var isScrolledNearBottom = true
@@ -314,6 +315,7 @@ struct ChatView: View {
     @State private var gitAlert: GitChatAlert?
     @State private var composerHeight: CGFloat = 52
     @State private var composerIsFocused = false
+    @State private var didHydrateDraft = false
     @State private var didCompleteInitialAppearance = false
     @State private var isInitialComposerFocusContentReady = false
     @State private var didApplyInitialComposerFocusPolicy = false
@@ -331,13 +333,15 @@ struct ChatView: View {
         initialDraft: String = "",
         initialAttachments: [SharedAttachmentImport] = [],
         loadsInitialMessages: Bool = true,
-        autoStartsVoiceInput: Bool = false
+        autoStartsVoiceInput: Bool = false,
+        draftStore: ChatDraftStore? = nil
     ) {
         self.session = session
         self.server = server
         self.onAPIError = onAPIError
         self.loadsInitialMessages = loadsInitialMessages
         self.autoStartsVoiceInput = autoStartsVoiceInput
+        self.draftStore = draftStore ?? .shared
         _draftMessage = State(initialValue: initialDraft)
         _initialAttachments = State(initialValue: initialAttachments)
         _viewModel = State(initialValue: ChatViewModel(
@@ -358,7 +362,7 @@ struct ChatView: View {
     // "unable to type-check in reasonable time" limit).
     private var messageComposer: some View {
         MessageComposerView(
-            draftMessage: $draftMessage,
+            draftMessage: persistedDraftBinding,
             isFocused: $composerIsFocused,
             isSending: viewModel.isStartingChat || viewModel.isSendingVoiceNote,
             isCompressingSession: viewModel.isCompressingSession,
@@ -602,6 +606,7 @@ struct ChatView: View {
                 viewModel.setShowsLiveActivityResponseExcerpts(showsLiveActivityResponseExcerpts)
             }
             .onDisappear {
+                flushDraftsBestEffort()
                 activeStreamStatusRefreshTask?.cancel()
                 activeStreamStatusRefreshTask = nil
                 viewModel.stopListening()
@@ -1311,6 +1316,7 @@ struct ChatView: View {
     }
 
     private func handleInitialAppearanceTask() async {
+        await hydrateDraftIfNeeded()
         prepareInitialAppearance()
 
         guard ChatInitialAppearancePolicy.shouldBeginAsyncWork(
@@ -1448,7 +1454,11 @@ struct ChatView: View {
                 submittedDraft,
                 behavior: StreamingSendBehavior.storedValue(streamingSendBehaviorRawValue)
             )
-            handleSlashExecutionResult(result, parsedCommand: SlashCommandCatalog.command(named: streamingSendBehaviorCommandName))
+            handleSlashExecutionResult(
+                result,
+                parsedCommand: SlashCommandCatalog.command(named: streamingSendBehaviorCommandName),
+                clearsDraft: result.isSuccessfulSubmission && draftMessage == submittedDraft
+            )
             didStart = result.isSuccessfulSubmission
         } else {
             didStart = await sendStandardMessage(submittedDraft)
@@ -1493,19 +1503,24 @@ struct ChatView: View {
 
         prepareTranscriptForExplicitSend()
 
+        draftStore.setDraft(submittedDraft, for: draftKey)
         draftMessage = ""
 
         let didStart = await viewModel.sendMessage(submittedDraft, modelContext: modelContext)
-        if !didStart, draftMessage.isEmpty {
-            draftMessage = submittedDraft
-        }
+        draftMessage = draftStore.resolveSubmission(
+            submittedText: submittedDraft,
+            currentText: draftMessage,
+            didStart: didStart,
+            for: draftKey
+        )
 
         return didStart
     }
 
     private func handleSlashExecutionResult(
         _ result: SlashCommandExecutionResult,
-        parsedCommand: SlashCommand?
+        parsedCommand: SlashCommand?,
+        clearsDraft: Bool = true
     ) {
         switch result {
         case .executed(let message):
@@ -1520,13 +1535,19 @@ struct ChatView: View {
                     viewModel.appendLocalAssistantMessage(message)
                 }
             }
-            draftMessage = ""
+            if clearsDraft {
+                clearCurrentDraft()
+            }
         case .openedSession(let session):
             forkedSession = session
-            draftMessage = ""
+            if clearsDraft {
+                clearCurrentDraft()
+            }
         case .unsupported(let friendlyMessage):
             viewModel.setSendErrorMessage(friendlyMessage)
-            draftMessage = ""
+            if clearsDraft {
+                clearCurrentDraft()
+            }
         case .needsSubArg:
             viewModel.setSendErrorMessage(String(localized: "Choose a slash command or continue typing."))
         case .sendAsMessage:
@@ -1550,6 +1571,52 @@ struct ChatView: View {
             "interrupt"
         case .queue:
             "queue"
+        }
+    }
+
+    private var draftKey: ChatDraftKey {
+        let normalizedSessionID = session.sessionId?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let sessionID = normalizedSessionID.flatMap { $0.isEmpty ? nil : $0 } ?? session.id
+        return .session(
+            server: server,
+            sessionID: sessionID
+        )
+    }
+
+    private var persistedDraftBinding: Binding<String> {
+        Binding(
+            get: { draftMessage },
+            set: { newValue in
+                draftMessage = newValue
+                draftStore.setDraft(newValue, for: draftKey)
+            }
+        )
+    }
+
+    private func hydrateDraftIfNeeded() async {
+        guard !didHydrateDraft else { return }
+        let textBeforeHydration = draftMessage
+        let persistedDraft = await draftStore.draft(for: draftKey)
+        guard !Task.isCancelled, draftMessage == textBeforeHydration else { return }
+
+        if textBeforeHydration.isEmpty {
+            if let persistedDraft {
+                draftMessage = persistedDraft
+            }
+        } else {
+            draftStore.setDraft(textBeforeHydration, for: draftKey)
+        }
+        didHydrateDraft = true
+    }
+
+    private func clearCurrentDraft() {
+        draftMessage = ""
+        draftStore.clearDraft(for: draftKey)
+    }
+
+    private func flushDraftsBestEffort() {
+        Task {
+            try? await draftStore.flush()
         }
     }
 
@@ -1846,6 +1913,10 @@ struct ChatView: View {
     }
 
     private func handleScenePhaseChange(_ phase: ScenePhase) {
+        if phase != .active {
+            flushDraftsBestEffort()
+        }
+
         switch phase {
         case .background:
             if viewModel.activeStreamID != nil {
