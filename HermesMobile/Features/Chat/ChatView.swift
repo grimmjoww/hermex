@@ -284,6 +284,7 @@ struct ChatView: View {
     let draftStore: ChatDraftStore
 
     @State private var draftMessage = ""
+    @State private var draftRevision = 0
     @State private var isScrolledNearBottom = true
     @State private var isReadingOlderTranscript = false
     @State private var shouldFollowLatestMessage = true
@@ -1432,6 +1433,7 @@ struct ChatView: View {
 
     private func sendDraftMessage() async {
         let submittedDraft = draftMessage
+        let submittedDraftRevision = draftRevision
         let shouldRestoreFocusAfterSend = composerIsFocused
 
         if submittedDraft.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("/") {
@@ -1440,7 +1442,8 @@ struct ChatView: View {
             handleSlashExecutionResult(
                 result,
                 parsedCommand: parsedCommand,
-                submittedDraft: submittedDraft
+                submittedDraft: submittedDraft,
+                submittedDraftRevision: submittedDraftRevision
             )
 
             if result != .sendAsMessage {
@@ -1462,11 +1465,15 @@ struct ChatView: View {
                 result,
                 parsedCommand: SlashCommandCatalog.command(named: streamingSendBehaviorCommandName),
                 submittedDraft: submittedDraft,
+                submittedDraftRevision: submittedDraftRevision,
                 consumesDraft: result.isSuccessfulSubmission
             )
             didStart = result.isSuccessfulSubmission
         } else {
-            didStart = await sendStandardMessage(submittedDraft)
+            didStart = await sendStandardMessage(
+                submittedDraft,
+                submittedDraftRevision: submittedDraftRevision
+            )
         }
 
         if didStart {
@@ -1501,7 +1508,10 @@ struct ChatView: View {
         }
     }
 
-    private func sendStandardMessage(_ submittedDraft: String) async -> Bool {
+    private func sendStandardMessage(
+        _ submittedDraft: String,
+        submittedDraftRevision: Int
+    ) async -> Bool {
         guard !submittedDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return false
         }
@@ -1516,6 +1526,7 @@ struct ChatView: View {
             submittedText: submittedDraft,
             currentText: draftMessage,
             didStart: didStart,
+            draftWasEdited: draftRevision != submittedDraftRevision,
             for: draftKey
         )
 
@@ -1526,6 +1537,7 @@ struct ChatView: View {
         _ result: SlashCommandExecutionResult,
         parsedCommand: SlashCommand?,
         submittedDraft: String,
+        submittedDraftRevision: Int,
         consumesDraft: Bool = true
     ) {
         switch result {
@@ -1542,17 +1554,26 @@ struct ChatView: View {
                 }
             }
             if consumesDraft {
-                reconcileConsumedDraft(submittedDraft)
+                reconcileConsumedDraft(
+                    submittedDraft,
+                    submittedDraftRevision: submittedDraftRevision
+                )
             }
         case .openedSession(let session):
             forkedSession = session
             if consumesDraft {
-                reconcileConsumedDraft(submittedDraft)
+                reconcileConsumedDraft(
+                    submittedDraft,
+                    submittedDraftRevision: submittedDraftRevision
+                )
             }
         case .unsupported(let friendlyMessage):
             viewModel.setSendErrorMessage(friendlyMessage)
             if consumesDraft {
-                reconcileConsumedDraft(submittedDraft)
+                reconcileConsumedDraft(
+                    submittedDraft,
+                    submittedDraftRevision: submittedDraftRevision
+                )
             }
         case .needsSubArg:
             viewModel.setSendErrorMessage(String(localized: "Choose a slash command or continue typing."))
@@ -1594,6 +1615,7 @@ struct ChatView: View {
             get: { draftMessage },
             set: { newValue in
                 draftMessage = newValue
+                draftRevision &+= 1
                 draftStore.setDraft(newValue, for: draftKey)
             }
         )
@@ -1615,10 +1637,14 @@ struct ChatView: View {
         didHydrateDraft = true
     }
 
-    private func reconcileConsumedDraft(_ submittedDraft: String) {
+    private func reconcileConsumedDraft(
+        _ submittedDraft: String,
+        submittedDraftRevision: Int
+    ) {
         draftMessage = draftStore.resolveConsumedInput(
             submittedText: submittedDraft,
             currentText: draftMessage,
+            draftWasEdited: draftRevision != submittedDraftRevision,
             for: draftKey
         )
     }

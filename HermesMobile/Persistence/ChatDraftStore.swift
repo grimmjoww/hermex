@@ -230,8 +230,11 @@ final class ChatDraftStore {
         submittedText: String,
         currentText: String,
         didStart: Bool,
+        draftWasEdited: Bool,
         for key: ChatDraftKey
     ) -> String {
+        guard !draftWasEdited else { return currentText }
+
         if didStart {
             if currentText.isEmpty {
                 clearDraft(for: key)
@@ -249,9 +252,10 @@ final class ChatDraftStore {
     func resolveConsumedInput(
         submittedText: String,
         currentText: String,
+        draftWasEdited: Bool,
         for key: ChatDraftKey
     ) -> String {
-        guard currentText == submittedText else { return currentText }
+        guard !draftWasEdited, currentText == submittedText else { return currentText }
         clearDraft(for: key)
         return ""
     }

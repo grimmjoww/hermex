@@ -124,6 +124,7 @@ final class ChatDraftStoreTests: XCTestCase {
             submittedText: submitted,
             currentText: "",
             didStart: false,
+            draftWasEdited: false,
             for: key
         )
         XCTAssertEqual(restored, submitted)
@@ -134,6 +135,7 @@ final class ChatDraftStoreTests: XCTestCase {
             submittedText: submitted,
             currentText: "",
             didStart: true,
+            draftWasEdited: false,
             for: key
         )
         XCTAssertEqual(cleared, "")
@@ -155,6 +157,7 @@ final class ChatDraftStoreTests: XCTestCase {
                 submittedText: "Submitted text",
                 currentText: "New text",
                 didStart: true,
+                draftWasEdited: true,
                 for: key
             ),
             "New text"
@@ -164,15 +167,28 @@ final class ChatDraftStoreTests: XCTestCase {
                 submittedText: "Submitted text",
                 currentText: "New text",
                 didStart: false,
+                draftWasEdited: true,
                 for: key
             ),
             "New text"
         )
         let currentDraft = await store.draft(for: key)
         XCTAssertEqual(currentDraft, "New text")
+
+        store.clearDraft(for: key)
+        let editedBackToEmpty = store.resolveSubmission(
+            submittedText: "Submitted text",
+            currentText: "",
+            didStart: false,
+            draftWasEdited: true,
+            for: key
+        )
+        XCTAssertEqual(editedBackToEmpty, "")
+        let emptyDraft = await store.draft(for: key)
+        XCTAssertNil(emptyDraft)
     }
 
-    func testTextEnteredWhileConsumedInputRunsIsNotCleared() async {
+    func testNewComposerRevisionIsNotClearedEvenWhenTextMatchesConsumedInput() async {
         let persistence = RecordingChatDraftPersistence()
         let store = ChatDraftStore(persistence: persistence, debounceDuration: .seconds(10))
         let key = ChatDraftKey(
@@ -180,20 +196,22 @@ final class ChatDraftStoreTests: XCTestCase {
             context: .session("chat-1")
         )
 
-        store.setDraft("New text", for: key)
+        store.setDraft("/status", for: key)
         let retained = store.resolveConsumedInput(
             submittedText: "/status",
-            currentText: "New text",
+            currentText: "/status",
+            draftWasEdited: true,
             for: key
         )
-        XCTAssertEqual(retained, "New text")
+        XCTAssertEqual(retained, "/status")
         let retainedDraft = await store.draft(for: key)
-        XCTAssertEqual(retainedDraft, "New text")
+        XCTAssertEqual(retainedDraft, "/status")
 
         store.setDraft("/status", for: key)
         let cleared = store.resolveConsumedInput(
             submittedText: "/status",
             currentText: "/status",
+            draftWasEdited: false,
             for: key
         )
         XCTAssertEqual(cleared, "")
