@@ -172,6 +172,35 @@ final class ChatDraftStoreTests: XCTestCase {
         XCTAssertEqual(currentDraft, "New text")
     }
 
+    func testTextEnteredWhileConsumedInputRunsIsNotCleared() async {
+        let persistence = RecordingChatDraftPersistence()
+        let store = ChatDraftStore(persistence: persistence, debounceDuration: .seconds(10))
+        let key = ChatDraftKey(
+            serverID: "https://example.com",
+            context: .session("chat-1")
+        )
+
+        store.setDraft("New text", for: key)
+        let retained = store.resolveConsumedInput(
+            submittedText: "/status",
+            currentText: "New text",
+            for: key
+        )
+        XCTAssertEqual(retained, "New text")
+        let retainedDraft = await store.draft(for: key)
+        XCTAssertEqual(retainedDraft, "New text")
+
+        store.setDraft("/status", for: key)
+        let cleared = store.resolveConsumedInput(
+            submittedText: "/status",
+            currentText: "/status",
+            for: key
+        )
+        XCTAssertEqual(cleared, "")
+        let clearedDraft = await store.draft(for: key)
+        XCTAssertNil(clearedDraft)
+    }
+
     func testFilePersistenceUsesVersionedLossyDecoding() async throws {
         let directory = temporaryDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }

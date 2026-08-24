@@ -246,6 +246,16 @@ final class ChatDraftStore {
         return currentText
     }
 
+    func resolveConsumedInput(
+        submittedText: String,
+        currentText: String,
+        for key: ChatDraftKey
+    ) -> String {
+        guard currentText == submittedText else { return currentText }
+        clearDraft(for: key)
+        return ""
+    }
+
     @discardableResult
     func moveDraft(from sourceKey: ChatDraftKey, to targetKey: ChatDraftKey) -> String {
         markChangedBeforeLoad(sourceKey)

@@ -1437,7 +1437,11 @@ struct ChatView: View {
         if submittedDraft.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("/") {
             let parsedCommand = SlashCommandExecutor.parse(submittedDraft)?.command
             let result = await SlashCommandExecutor.execute(text: submittedDraft, viewModel: viewModel)
-            handleSlashExecutionResult(result, parsedCommand: parsedCommand)
+            handleSlashExecutionResult(
+                result,
+                parsedCommand: parsedCommand,
+                submittedDraft: submittedDraft
+            )
 
             if result != .sendAsMessage {
                 if let lastError = viewModel.lastError {
@@ -1457,7 +1461,8 @@ struct ChatView: View {
             handleSlashExecutionResult(
                 result,
                 parsedCommand: SlashCommandCatalog.command(named: streamingSendBehaviorCommandName),
-                clearsDraft: result.isSuccessfulSubmission && draftMessage == submittedDraft
+                submittedDraft: submittedDraft,
+                consumesDraft: result.isSuccessfulSubmission
             )
             didStart = result.isSuccessfulSubmission
         } else {
@@ -1520,7 +1525,8 @@ struct ChatView: View {
     private func handleSlashExecutionResult(
         _ result: SlashCommandExecutionResult,
         parsedCommand: SlashCommand?,
-        clearsDraft: Bool = true
+        submittedDraft: String,
+        consumesDraft: Bool = true
     ) {
         switch result {
         case .executed(let message):
@@ -1535,18 +1541,18 @@ struct ChatView: View {
                     viewModel.appendLocalAssistantMessage(message)
                 }
             }
-            if clearsDraft {
-                clearCurrentDraft()
+            if consumesDraft {
+                reconcileConsumedDraft(submittedDraft)
             }
         case .openedSession(let session):
             forkedSession = session
-            if clearsDraft {
-                clearCurrentDraft()
+            if consumesDraft {
+                reconcileConsumedDraft(submittedDraft)
             }
         case .unsupported(let friendlyMessage):
             viewModel.setSendErrorMessage(friendlyMessage)
-            if clearsDraft {
-                clearCurrentDraft()
+            if consumesDraft {
+                reconcileConsumedDraft(submittedDraft)
             }
         case .needsSubArg:
             viewModel.setSendErrorMessage(String(localized: "Choose a slash command or continue typing."))
@@ -1609,9 +1615,12 @@ struct ChatView: View {
         didHydrateDraft = true
     }
 
-    private func clearCurrentDraft() {
-        draftMessage = ""
-        draftStore.clearDraft(for: draftKey)
+    private func reconcileConsumedDraft(_ submittedDraft: String) {
+        draftMessage = draftStore.resolveConsumedInput(
+            submittedText: submittedDraft,
+            currentText: draftMessage,
+            for: draftKey
+        )
     }
 
     private func flushDraftsBestEffort() {
