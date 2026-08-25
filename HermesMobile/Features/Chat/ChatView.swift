@@ -1746,11 +1746,27 @@ struct ChatView: View {
                 pendingRetry.append(contentsOf: records[offset...])
                 break
             }
-            guard let fileName = record.file,
-                  let data = await draftAttachmentStore.dataIfPresent(named: fileName) else {
+            guard let fileName = record.file else {
+                // No durable copy was ever written for this record.
                 unrecoverableCount += 1
                 continue
             }
+
+            let data: Data
+            do {
+                data = try await draftAttachmentStore.data(named: fileName)
+            } catch {
+                // Only a copy that is genuinely gone is dropped. Any other
+                // read failure keeps the record so a later open can retry it.
+                switch ChatDraftAttachmentReadFailure.classify(error) {
+                case .unrecoverable:
+                    unrecoverableCount += 1
+                case .transient:
+                    pendingRetry.append(record)
+                }
+                continue
+            }
+
             if await viewModel.reuploadDraftAttachment(record, data: data) == nil {
                 pendingRetry.append(record)
             }

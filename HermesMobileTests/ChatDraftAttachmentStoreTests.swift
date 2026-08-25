@@ -103,17 +103,60 @@ final class ChatDraftAttachmentStoreTests: XCTestCase {
         XCTAssertEqual(keptData, Data("keep".utf8))
     }
 
-    func testSaveIfPossibleAndDataIfPresentAreBestEffort() async throws {
+    func testSaveIfPossibleIsBestEffort() async throws {
         let directory = temporaryDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }
         let store = ChatDraftAttachmentStore(directoryURL: directory)
 
         let fileName = await store.saveIfPossible(data: Data("bytes".utf8), suggestedFilename: "photo.jpg")
         XCTAssertNotNil(fileName)
-        let missing = await store.dataIfPresent(named: "missing.jpg")
-        let traversal = await store.dataIfPresent(named: "../other")
-        XCTAssertNil(missing)
-        XCTAssertNil(traversal)
+    }
+
+    // MARK: - Read-failure classification
+
+    /// A record is only dropped from a draft when its copy is genuinely gone.
+    func testAMissingFileIsClassifiedUnrecoverable() async throws {
+        let directory = temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = ChatDraftAttachmentStore(directoryURL: directory)
+        _ = try await store.save(data: Data("bytes".utf8), suggestedFilename: "photo.jpg")
+
+        do {
+            _ = try await store.data(named: "never-written.jpg")
+            XCTFail("Expected a read failure for a missing file")
+        } catch {
+            XCTAssertEqual(ChatDraftAttachmentReadFailure.classify(error), .unrecoverable)
+        }
+    }
+
+    /// A name that cannot resolve never will, so it is not worth retrying.
+    func testAnInvalidFileNameIsClassifiedUnrecoverable() async throws {
+        let directory = temporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = ChatDraftAttachmentStore(directoryURL: directory)
+
+        do {
+            _ = try await store.data(named: "../escape.jpg")
+            XCTFail("Expected a read failure for a traversal name")
+        } catch {
+            XCTAssertEqual(ChatDraftAttachmentReadFailure.classify(error), .unrecoverable)
+        }
+    }
+
+    /// The case that matters: a copy that is present but unreadable right now
+    /// (data protection before first unlock, a transient I/O error) must be
+    /// retried, not reported as permanently lost and swept away.
+    func testAnUnreadableButPresentFileIsClassifiedTransient() {
+        let protectionFailure = NSError(
+            domain: NSCocoaErrorDomain,
+            code: NSFileReadNoPermissionError
+        )
+        XCTAssertEqual(ChatDraftAttachmentReadFailure.classify(protectionFailure), .transient)
+
+        let ioFailure = NSError(domain: NSPOSIXErrorDomain, code: Int(EIO))
+        XCTAssertEqual(ChatDraftAttachmentReadFailure.classify(ioFailure), .transient)
+
+        XCTAssertEqual(ChatDraftAttachmentReadFailure.classify(CancellationError()), .transient)
     }
 
     private func temporaryDirectory() -> URL {

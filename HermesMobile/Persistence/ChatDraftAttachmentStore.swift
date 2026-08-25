@@ -24,9 +24,35 @@ extension ChatDraftAttachmentStoring {
     func saveIfPossible(data: Data, suggestedFilename: String) async -> String? {
         try? await save(data: data, suggestedFilename: suggestedFilename)
     }
+}
 
-    func dataIfPresent(named fileName: String) async -> Data? {
-        try? await data(named: fileName)
+/// Why a draft attachment's durable copy could not be read, and therefore
+/// whether its record is worth keeping.
+///
+/// Collapsing every read failure to "gone" is what makes this matter: a copy
+/// that is merely unreadable *right now* — data protection before first
+/// unlock, for instance — would otherwise be reported as permanently lost and
+/// dropped from the draft, and its file later reclaimed by the sweep.
+enum ChatDraftAttachmentReadFailure: Equatable {
+    /// The copy is gone, or its recorded name can never resolve. The record
+    /// cannot be restored now or later, so it is dropped.
+    case unrecoverable
+    /// The copy may still be there; this read just did not succeed. The record
+    /// is kept and retried on a later open.
+    case transient
+
+    static func classify(_ error: Error) -> Self {
+        let nsError = error as NSError
+        guard nsError.domain == NSCocoaErrorDomain else { return .transient }
+        switch nsError.code {
+        case NSFileNoSuchFileError, NSFileReadNoSuchFileError:
+            return .unrecoverable
+        case NSFileReadInvalidFileNameError:
+            // A name that cannot be resolved never will be.
+            return .unrecoverable
+        default:
+            return .transient
+        }
     }
 }
 
