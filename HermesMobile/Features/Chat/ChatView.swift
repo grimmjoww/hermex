@@ -1729,9 +1729,19 @@ struct ChatView: View {
     private func restoreDraftAttachments(_ records: [ChatDraftAttachment]) async {
         var pendingRetry: [ChatDraftAttachment] = []
         var unrecoverableCount = 0
+        var wasCancelled = false
 
-        for record in records {
-            if Task.isCancelled { break }
+        for (offset, record) in records.enumerated() {
+            if Task.isCancelled {
+                // Leaving the chat mid-restore is not a restore failure. Every
+                // record from here on is untried, so carry the whole remainder
+                // into the retry set: the sync below is authoritative, and
+                // anything missing from it would be dropped from the draft and
+                // later swept from disk.
+                wasCancelled = true
+                pendingRetry.append(contentsOf: records[offset...])
+                break
+            }
             guard let fileName = record.file,
                   let data = await draftAttachmentStore.dataIfPresent(named: fileName) else {
                 unrecoverableCount += 1
@@ -1748,6 +1758,9 @@ struct ChatView: View {
         // retry union, and drops unrecoverable records from the draft.
         syncDraftAttachments()
 
+        // Report only a real restore outcome. A cancelled pass has nothing to
+        // say, and its view is going away regardless.
+        guard !wasCancelled else { return }
         if !pendingRetry.isEmpty || unrecoverableCount > 0 {
             viewModel.setUploadAttachmentError(
                 draftRestoreFailureMessage(retryCount: pendingRetry.count, droppedCount: unrecoverableCount)
