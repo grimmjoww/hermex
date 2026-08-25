@@ -1114,8 +1114,21 @@ final class ChatViewModel {
         }
     }
 
-    func uploadAttachment(data: Data, filename: String, previewData: Data? = nil) async {
-        await attachmentCoordinator.uploadAttachment(data: data, filename: filename, previewData: previewData)
+    /// Uploads a freshly staged file into the pending strip. `draftFileName`
+    /// is the durable app-owned copy the caller wrote before staging; it
+    /// travels with the pending attachment so the persisted draft record keeps
+    /// pointing at it. Returns the staged attachment (nil on failure).
+    @discardableResult
+    func uploadAttachment(data: Data, filename: String, previewData: Data? = nil, draftFileName: String? = nil) async -> PendingAttachment? {
+        await attachmentCoordinator.uploadAttachment(data: data, filename: filename, previewData: previewData, draftFileName: draftFileName)
+    }
+
+    /// Re-uploads a restored draft attachment from its durable local copy,
+    /// preserving the draft record's identity. Quiet on failure (returns nil):
+    /// the caller reports in aggregate and keeps the record for a later retry.
+    @discardableResult
+    func reuploadDraftAttachment(_ draftAttachment: ChatDraftAttachment, data: Data) async -> PendingAttachment? {
+        await attachmentCoordinator.reuploadDraftAttachment(data: data, draftAttachment: draftAttachment)
     }
 
     func clearPendingAttachments() {

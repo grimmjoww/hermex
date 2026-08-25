@@ -282,6 +282,13 @@ struct ChatView: View {
     /// "New Chat with Voice" App Intent (#338). Defaults to false for normal opens.
     let autoStartsVoiceInput: Bool
     let draftStore: ChatDraftStore
+    /// Store holding the durable app-owned copies of staged attachments.
+    let draftAttachmentStore: any ChatDraftAttachmentStoring
+    /// True only for the pending-new-chat flow: after the composer configuration
+    /// loads, the restored draft's settings snapshot is applied (each value
+    /// revalidated against the live server configuration). Existing sessions
+    /// load their configuration from the server and never re-apply a snapshot.
+    let restoresDraftSettings: Bool
     let onConversationStarted: () -> Void
 
     @State private var draftMessage = ""
@@ -318,6 +325,20 @@ struct ChatView: View {
     @State private var composerHeight: CGFloat = 52
     @State private var composerIsFocused = false
     @State private var didHydrateDraft = false
+    /// True from the moment hydration finds persisted attachment records until
+    /// their restore pass finishes. It gates `syncDraftAttachments` across the
+    /// whole window, so the not-yet-rebuilt composer strip can never overwrite
+    /// the persisted set.
+    @State private var isRestoringDraftAttachments = false
+    /// Records hydration found, handed to the restore pass that runs alongside
+    /// the transcript load rather than in front of it.
+    @State private var draftAttachmentsAwaitingRestore: [ChatDraftAttachment] = []
+    /// Restored attachment records whose re-upload failed; they stay in the
+    /// draft for a later retry and are unioned into every attachment sync.
+    @State private var draftAttachmentsPendingRetry: [ChatDraftAttachment] = []
+    @State private var lastSyncedDraftAttachments: [ChatDraftAttachment] = []
+    @State private var restoredDraftSettings: ChatDraftSettings?
+    @State private var didApplyRestoredDraftSettings = false
     @State private var didCompleteInitialAppearance = false
     @State private var isInitialComposerFocusContentReady = false
     @State private var didApplyInitialComposerFocusPolicy = false
@@ -337,6 +358,8 @@ struct ChatView: View {
         loadsInitialMessages: Bool = true,
         autoStartsVoiceInput: Bool = false,
         draftStore: ChatDraftStore? = nil,
+        draftAttachmentStore: (any ChatDraftAttachmentStoring)? = nil,
+        restoresDraftSettings: Bool = false,
         onConversationStarted: @escaping () -> Void = {}
     ) {
         self.session = session
@@ -345,6 +368,8 @@ struct ChatView: View {
         self.loadsInitialMessages = loadsInitialMessages
         self.autoStartsVoiceInput = autoStartsVoiceInput
         self.draftStore = draftStore ?? .shared
+        self.draftAttachmentStore = draftAttachmentStore ?? ChatDraftAttachmentStore.shared
+        self.restoresDraftSettings = restoresDraftSettings
         self.onConversationStarted = onConversationStarted
         _draftMessage = State(initialValue: initialDraft)
         _initialAttachments = State(initialValue: initialAttachments)
@@ -477,7 +502,13 @@ struct ChatView: View {
                 Task { await handlePastedImages(images) }
             },
             onRemoveAttachment: { id in
+                let removedAttachment = viewModel.pendingAttachments.first(where: { $0.id == id })
                 viewModel.removePendingAttachment(id: id)
+                // Explicit discard: the record drops out of the draft via the
+                // observation sync; delete its now-unreferenced local copy.
+                if let file = removedAttachment?.draftFileName {
+                    Task { await draftAttachmentStore.delete(named: file) }
+                }
             },
             onPreviewAttachment: { attachment in
                 presentPreviewRestoringComposerFocusIfNeeded {
@@ -606,6 +637,14 @@ struct ChatView: View {
                     applyInitialComposerFocusPolicyIfNeeded()
                 }
             }
+            .modifier(
+                ChatDraftSyncModifier(
+                    pendingAttachments: viewModel.pendingAttachments,
+                    composerSettings: currentComposerSettings,
+                    onAttachmentsChange: syncDraftAttachments,
+                    onSettingsChange: syncDraftSettings
+                )
+            )
             .onChange(of: showsLiveActivityResponseExcerpts) {
                 viewModel.setShowsLiveActivityResponseExcerpts(showsLiveActivityResponseExcerpts)
             }
@@ -1331,7 +1370,8 @@ struct ChatView: View {
 
         async let chatStartup: Void = performInitialAsyncWork()
         async let gitAvailability: Void = loadInitialGitAvailability()
-        _ = await (chatStartup, gitAvailability)
+        async let draftAttachments: Void = restoreDraftAttachmentsIfNeeded()
+        _ = await (chatStartup, gitAvailability, draftAttachments)
     }
 
     private func performInitialAsyncWork() async {
@@ -1346,6 +1386,9 @@ struct ChatView: View {
             applyInitialComposerFocusPolicyIfNeeded()
         }
         await viewModel.loadComposerConfiguration()
+        guard !Task.isCancelled else { return }
+
+        await applyRestoredDraftSettingsIfNeeded()
         guard !Task.isCancelled else { return }
 
         await viewModel.refreshApprovalBypassState()
@@ -1522,12 +1565,21 @@ struct ChatView: View {
 
         prepareTranscriptForExplicitSend()
 
+        // Snapshot the draft's attachment records before the send consumes the
+        // staged attachments (and the observation sync rewrites the draft): on
+        // acceptance the records the send actually carried become unreferenced.
+        // Records still awaiting a re-upload retry were not staged, so the send
+        // does not consume them and their local copies must survive.
+        let retryIDs = Set(draftAttachmentsPendingRetry.map(\.id))
+        let draftAttachmentRecordsConsumedBySend = lastSyncedDraftAttachments
+            .filter { !retryIDs.contains($0.id) }
         draftStore.setDraft(submittedDraft, for: draftKey)
         draftMessage = ""
 
         let didStart = await viewModel.sendMessage(submittedDraft, modelContext: modelContext)
         if didStart {
             onConversationStarted()
+            discardDraftAttachmentFiles(draftAttachmentRecordsConsumedBySend)
         }
         draftMessage = draftStore.resolveSubmission(
             submittedText: submittedDraft,
@@ -1536,6 +1588,13 @@ struct ChatView: View {
             draftWasEdited: draftRevision != submittedDraftRevision,
             for: draftKey
         )
+        if didStart {
+            // `resolveSubmission` cleared the draft's attachment records; put
+            // back the ones the send never carried so they retry on a later
+            // open. Deterministic here rather than waiting on the observation
+            // sync that the emptied composer strip will also trigger.
+            syncDraftAttachments()
+        }
 
         return didStart
     }
@@ -1635,13 +1694,198 @@ struct ChatView: View {
         guard !Task.isCancelled, draftMessage == textBeforeHydration else { return }
 
         if textBeforeHydration.isEmpty {
-            if let persistedDraft {
-                draftMessage = persistedDraft
+            if let persistedDraft, !persistedDraft.text.isEmpty {
+                draftMessage = persistedDraft.text
             }
         } else {
             draftStore.setDraft(textBeforeHydration, for: draftKey)
         }
         didHydrateDraft = true
+
+        restoredDraftSettings = persistedDraft?.settings
+        lastSyncedDraftAttachments = persistedDraft?.attachments ?? []
+        if let persistedDraft, !persistedDraft.attachments.isEmpty {
+            // Hold the sync gate now and restore later: re-uploading staged
+            // files is network work and must not delay the transcript.
+            isRestoringDraftAttachments = true
+            draftAttachmentsAwaitingRestore = persistedDraft.attachments
+        }
+    }
+
+    private func restoreDraftAttachmentsIfNeeded() async {
+        let records = draftAttachmentsAwaitingRestore
+        guard !records.isEmpty else { return }
+        draftAttachmentsAwaitingRestore = []
+        await restoreDraftAttachments(records)
+    }
+
+    /// Rebuilds the composer's staged attachments from a persisted draft by
+    /// re-uploading each record's durable local copy against this session. The
+    /// persisted server path is never trusted: uploads live in a per-session
+    /// inbox the server deletes with the session, so only the app-owned copy
+    /// is a sound restore source. Records whose copy is missing are dropped
+    /// (with a notice); records whose re-upload fails stay in the draft and
+    /// retry on a later open. The rest of the draft loads either way.
+    private func restoreDraftAttachments(_ records: [ChatDraftAttachment]) async {
+        var pendingRetry: [ChatDraftAttachment] = []
+        var unrecoverableCount = 0
+
+        for record in records {
+            if Task.isCancelled { break }
+            guard let fileName = record.file,
+                  let data = await draftAttachmentStore.dataIfPresent(named: fileName) else {
+                unrecoverableCount += 1
+                continue
+            }
+            if await viewModel.reuploadDraftAttachment(record, data: data) == nil {
+                pendingRetry.append(record)
+            }
+        }
+
+        isRestoringDraftAttachments = false
+        draftAttachmentsPendingRetry = pendingRetry
+        // Authoritative sync after restore: persists the restored set plus the
+        // retry union, and drops unrecoverable records from the draft.
+        syncDraftAttachments()
+
+        if !pendingRetry.isEmpty || unrecoverableCount > 0 {
+            viewModel.setUploadAttachmentError(
+                draftRestoreFailureMessage(retryCount: pendingRetry.count, droppedCount: unrecoverableCount)
+            )
+        }
+    }
+
+    /// Copy uses catalog plural variations rather than a hand-branched
+    /// singular/plural, so languages whose plural rules differ from English
+    /// still read correctly. The mixed case avoids a two-number sentence.
+    private func draftRestoreFailureMessage(retryCount: Int, droppedCount: Int) -> String {
+        switch (retryCount > 0, droppedCount > 0) {
+        case (true, false):
+            return String(localized: "Couldn't restore \(retryCount) saved attachments yet. They're still saved in this draft.")
+        case (false, true):
+            return String(localized: "\(droppedCount) saved attachments are no longer available and were removed from this draft.")
+        default:
+            return String(localized: "Some saved attachments couldn't be restored. Check this draft's attachments before sending.")
+        }
+    }
+
+    /// Mirrors the composer's staged attachments into the persisted draft.
+    /// Restored records whose re-upload failed are unioned back in so a
+    /// mid-restore or post-restore sync can't silently drop them. Gated during
+    /// hydration/restore so an empty or partial composer never overwrites the
+    /// persisted set.
+    private func syncDraftAttachments() {
+        guard didHydrateDraft, !isRestoringDraftAttachments else { return }
+        let pendingRecords = viewModel.pendingAttachments.map(ChatDraftAttachment.init(pending:))
+        let retryRecords = draftAttachmentsPendingRetry.filter { retry in
+            !pendingRecords.contains(where: { $0.id == retry.id })
+        }
+        let records = pendingRecords + retryRecords
+        lastSyncedDraftAttachments = records
+        draftStore.setAttachments(records, for: draftKey)
+    }
+
+    /// Snapshots the effective composer settings into the draft whenever they
+    /// change. Only new-chat contexts snapshot: an existing session's
+    /// configuration is owned by the server and is never re-applied from a
+    /// draft, so persisting it would just store choices at rest that nothing
+    /// reads. Snapshotting here is what lets an abandoned new chat carry its
+    /// model/workspace/profile/reasoning picks to the next new chat.
+    private func syncDraftSettings(_ settings: ChatDraftSettings) {
+        guard didHydrateDraft, restoresDraftSettings else { return }
+        draftStore.setSettings(settings, for: draftKey)
+    }
+
+    /// The composer choices that make up a draft's settings snapshot, as one
+    /// Equatable value so a single `onChange` covers all five.
+    private var currentComposerSettings: ChatDraftSettings {
+        ChatDraftSettings(
+            modelID: viewModel.selectedModelID,
+            modelProviderID: viewModel.selectedModelProviderID,
+            reasoningEffort: viewModel.selectedReasoningEffort,
+            profileName: viewModel.selectedProfileName,
+            workspacePath: viewModel.selectedWorkspacePath
+        )
+    }
+
+    /// New-chat only: replays the restored draft's settings through the
+    /// existing validated selection paths once the live server configuration
+    /// has loaded. Each field applies only when it still differs, is known to
+    /// the current server configuration, and the user hasn't touched the field
+    /// since load (tracked baselines). Server rejections roll back through the
+    /// existing selection error handling.
+    private func applyRestoredDraftSettingsIfNeeded() async {
+        guard restoresDraftSettings, !didApplyRestoredDraftSettings else { return }
+        didApplyRestoredDraftSettings = true
+        guard let settings = restoredDraftSettings, !Task.isCancelled else { return }
+        guard viewModel.messages.isEmpty, viewModel.activeStreamID == nil else { return }
+
+        var baselineProfile = viewModel.selectedProfileName
+        var baselineModelID = viewModel.selectedModelID
+        var baselineModelProviderID = viewModel.selectedModelProviderID
+        var baselineWorkspace = viewModel.selectedWorkspacePath
+        var baselineEffort = viewModel.selectedReasoningEffort
+
+        // Profile first: switching reseeds model/workspace defaults.
+        if let profileName = Self.normalizedDraftValue(settings.profileName),
+           viewModel.selectedProfileName == baselineProfile,
+           profileName != baselineProfile,
+           let option = viewModel.profileOptions.first(where: { $0.normalizedName == profileName }),
+           !viewModel.isSelectedProfile(option),
+           await viewModel.switchProfile(option, startNewSession: false) != nil {
+            baselineProfile = viewModel.selectedProfileName
+            baselineModelID = viewModel.selectedModelID
+            baselineModelProviderID = viewModel.selectedModelProviderID
+            baselineWorkspace = viewModel.selectedWorkspacePath
+            baselineEffort = viewModel.selectedReasoningEffort
+        }
+
+        if let modelID = Self.normalizedDraftValue(settings.modelID),
+           viewModel.selectedModelID == baselineModelID,
+           viewModel.selectedModelProviderID == baselineModelProviderID,
+           let option = viewModel.modelCatalogGroups
+               .flatMap(\.models)
+               .firstMatchingSelection(modelID: modelID, providerID: Self.normalizedDraftValue(settings.modelProviderID)),
+           !option.matchesSelection(modelID: baselineModelID, providerID: baselineModelProviderID),
+           await viewModel.selectComposerModel(option) {
+            baselineModelID = viewModel.selectedModelID
+            baselineModelProviderID = viewModel.selectedModelProviderID
+            baselineEffort = viewModel.selectedReasoningEffort
+        }
+
+        if let workspace = Self.normalizedDraftValue(settings.workspacePath),
+           viewModel.selectedWorkspacePath == baselineWorkspace,
+           workspace != baselineWorkspace,
+           viewModel.workspaceRoots.contains(where: { $0.path == workspace }),
+           await viewModel.selectWorkspacePath(workspace) {
+            baselineWorkspace = viewModel.selectedWorkspacePath
+        }
+
+        if let effort = Self.normalizedDraftValue(settings.reasoningEffort),
+           viewModel.selectedReasoningEffort == baselineEffort,
+           effort != baselineEffort,
+           viewModel.showsReasoningEffortControl {
+            let supportedEfforts = viewModel.supportedReasoningEfforts
+            // Older servers report no effort vocabulary; let the server coerce.
+            if supportedEfforts == nil || supportedEfforts?.contains(effort.lowercased()) == true {
+                _ = await viewModel.selectReasoningEffort(effort)
+            }
+        }
+    }
+
+    private static func normalizedDraftValue(_ raw: String?) -> String? {
+        let trimmed = raw?.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed?.isEmpty == false ? trimmed : nil
+    }
+
+    /// Deletes the durable local copies of draft attachment records. Called
+    /// when a send is accepted: the message now owns the server-side uploads
+    /// and the draft copies are unreferenced.
+    private func discardDraftAttachmentFiles(_ records: [ChatDraftAttachment]) {
+        for record in records {
+            guard let file = record.file else { continue }
+            Task { await draftAttachmentStore.delete(named: file) }
+        }
     }
 
     private func reconcileConsumedDraft(
@@ -1722,7 +1966,7 @@ struct ChatView: View {
 
         didUploadInitialAttachments = true
         for attachment in initialAttachments {
-            await viewModel.uploadAttachment(
+            await uploadAttachmentForDraft(
                 data: attachment.data,
                 filename: attachment.filename,
                 previewData: previewData(for: attachment)
@@ -1741,6 +1985,25 @@ struct ChatView: View {
         return imageExtensions.contains(fileExtension) ? attachment.data : nil
     }
 
+    /// Stages a picked/pasted/shared file: writes its durable app-owned draft
+    /// copy first, then uploads. If the upload fails the copy is deleted again
+    /// so neither the draft nor the disk keeps a reference to it. If the copy
+    /// itself fails, the upload still proceeds — the draft record then carries
+    /// no local file and becomes unrecoverable-on-restore instead of blocking
+    /// the attach.
+    private func uploadAttachmentForDraft(data: Data, filename: String, previewData: Data? = nil) async {
+        let draftFileName = await draftAttachmentStore.saveIfPossible(data: data, suggestedFilename: filename)
+        let uploaded = await viewModel.uploadAttachment(
+            data: data,
+            filename: filename,
+            previewData: previewData,
+            draftFileName: draftFileName
+        )
+        if uploaded == nil, let draftFileName {
+            await draftAttachmentStore.delete(named: draftFileName)
+        }
+    }
+
     private func handlePhotoSelection(_ item: PhotosPickerItem) async {
         do {
             guard let data = try await item.loadTransferable(type: Data.self) else {
@@ -1748,7 +2011,7 @@ struct ChatView: View {
                 return
             }
             let filename = "image_\(Int(Date().timeIntervalSince1970))_\(UUID().uuidString.prefix(4)).jpg"
-            await viewModel.uploadAttachment(data: data, filename: filename, previewData: data)
+            await uploadAttachmentForDraft(data: data, filename: filename, previewData: data)
         } catch {
             viewModel.setUploadAttachmentError(error.localizedDescription)
         }
@@ -1765,7 +2028,7 @@ struct ChatView: View {
         for url in fileURLs {
             do {
                 let file = try loadPastedFile(from: url, suggestedName: nil)
-                await viewModel.uploadAttachment(data: file.data, filename: file.filename)
+                await uploadAttachmentForDraft(data: file.data, filename: file.filename)
             } catch {
                 viewModel.setUploadAttachmentError(error.localizedDescription)
             }
@@ -1785,7 +2048,7 @@ struct ChatView: View {
         for provider in fileProviders {
             do {
                 let file = try await loadPastedFile(from: provider)
-                await viewModel.uploadAttachment(data: file.data, filename: file.filename)
+                await uploadAttachmentForDraft(data: file.data, filename: file.filename)
             } catch {
                 viewModel.setUploadAttachmentError(error.localizedDescription)
             }
@@ -1805,7 +2068,7 @@ struct ChatView: View {
         for provider in imageProviders {
             do {
                 let image = try await loadPastedImage(from: provider)
-                await viewModel.uploadAttachment(data: image.data, filename: image.filename, previewData: image.data)
+                await uploadAttachmentForDraft(data: image.data, filename: image.filename, previewData: image.data)
             } catch {
                 viewModel.setUploadAttachmentError(error.localizedDescription)
             }
@@ -1824,7 +2087,7 @@ struct ChatView: View {
                 continue
             }
 
-            await viewModel.uploadAttachment(data: data, filename: pastedImageFilename(), previewData: data)
+            await uploadAttachmentForDraft(data: data, filename: pastedImageFilename(), previewData: data)
         }
     }
 
@@ -1864,7 +2127,7 @@ struct ChatView: View {
         for url in fileURLs {
             do {
                 let file = try loadPastedFile(from: url, suggestedName: nil)
-                await viewModel.uploadAttachment(data: file.data, filename: file.filename)
+                await uploadAttachmentForDraft(data: file.data, filename: file.filename)
             } catch {
                 viewModel.setUploadAttachmentError(error.localizedDescription)
             }
@@ -2511,5 +2774,25 @@ private extension SlashCommandExecutionResult {
         case .sendAsMessage, .unsupported, .needsSubArg:
             false
         }
+    }
+}
+
+/// Mirrors composer state into the persisted draft. Extracted from `ChatView`'s
+/// modifier chain: folding these two observers into one modifier keeps the
+/// chain within the Swift type-checker's budget.
+private struct ChatDraftSyncModifier: ViewModifier {
+    let pendingAttachments: [PendingAttachment]
+    let composerSettings: ChatDraftSettings
+    let onAttachmentsChange: () -> Void
+    let onSettingsChange: (ChatDraftSettings) -> Void
+
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: pendingAttachments) { _, _ in
+                onAttachmentsChange()
+            }
+            .onChange(of: composerSettings) { _, newSettings in
+                onSettingsChange(newSettings)
+            }
     }
 }

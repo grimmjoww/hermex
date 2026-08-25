@@ -304,6 +304,129 @@ final class ChatAttachmentCoordinatorTests: APIClientTestCase {
         XCTAssertEqual(requestCount, 0)
     }
 
+    func testUploadCarriesDraftFileNameIntoPendingAttachment() async throws {
+        let client = makeClient { request in
+            let filename = try Self.multipartFilename(from: request)
+            return apiTestJSONResponse(
+                """
+                {
+                  "filename": "\(filename)",
+                  "path": "/tmp/workspace/\(filename)",
+                  "size": 5,
+                  "mime": "text/plain",
+                  "is_image": false
+                }
+                """,
+                for: request
+            )
+        }
+        let coordinator = makeCoordinator(client: client)
+
+        let uploaded = await coordinator.uploadAttachment(
+            data: Data("notes".utf8),
+            filename: "notes.txt",
+            draftFileName: "abc-notes.txt"
+        )
+
+        XCTAssertEqual(uploaded?.draftFileName, "abc-notes.txt")
+        XCTAssertEqual(coordinator.pendingAttachments.first?.draftFileName, "abc-notes.txt")
+    }
+
+    func testStandaloneUploadNeverCarriesADraftFileName() async throws {
+        let client = makeClient { request in
+            let filename = try Self.multipartFilename(from: request)
+            return apiTestJSONResponse(
+                """
+                {
+                  "filename": "\(filename)",
+                  "path": "/tmp/workspace/\(filename)",
+                  "size": 5,
+                  "mime": "audio/m4a",
+                  "is_image": false
+                }
+                """,
+                for: request
+            )
+        }
+        let coordinator = makeCoordinator(client: client)
+
+        let uploaded = await coordinator.uploadStandaloneAttachment(
+            data: Data("audio".utf8),
+            filename: "clip.m4a"
+        )
+
+        XCTAssertNil(uploaded?.draftFileName)
+        XCTAssertTrue(coordinator.pendingAttachments.isEmpty)
+    }
+
+    func testReuploadDraftAttachmentPreservesDraftIdentity() async throws {
+        let record = ChatDraftAttachment(
+            id: UUID(),
+            name: "notes.txt",
+            mime: "text/plain",
+            size: 5,
+            isImage: false,
+            file: "abc-notes.txt"
+        )
+        let client = makeClient { request in
+            let filename = try Self.multipartFilename(from: request)
+            return apiTestJSONResponse(
+                """
+                {
+                  "filename": "\(filename)",
+                  "path": "/tmp/workspace/\(filename)",
+                  "size": 5,
+                  "mime": "text/plain",
+                  "is_image": false
+                }
+                """,
+                for: request
+            )
+        }
+        let coordinator = makeCoordinator(client: client)
+
+        let restored = await coordinator.reuploadDraftAttachment(
+            data: Data("notes".utf8),
+            draftAttachment: record
+        )
+
+        XCTAssertEqual(restored?.id, record.id)
+        XCTAssertEqual(restored?.draftFileName, "abc-notes.txt")
+        XCTAssertEqual(restored?.path, "/tmp/workspace/notes.txt")
+        XCTAssertNil(coordinator.uploadAttachmentErrorMessage)
+        XCTAssertEqual(coordinator.pendingAttachments.map(\.id), [record.id])
+    }
+
+    func testReuploadDraftAttachmentFailureStaysQuiet() async throws {
+        let record = ChatDraftAttachment(
+            id: UUID(),
+            name: "notes.txt",
+            mime: "text/plain",
+            size: 5,
+            isImage: false,
+            file: "abc-notes.txt"
+        )
+        let client = makeClient { request in
+            apiTestJSONResponse(#"{"error":"Upload failed."}"#, for: request)
+        }
+        let coordinator = ChatAttachmentCoordinator(client: client)
+        let delegate = ChatAttachmentCoordinatorDelegateSpy()
+        delegateSpies.append(delegate)
+        coordinator.delegate = delegate
+
+        let restored = await coordinator.reuploadDraftAttachment(
+            data: Data("notes".utf8),
+            draftAttachment: record
+        )
+
+        // Restore failures must not surface a per-item banner or delegate
+        // error; the caller reports in aggregate and keeps the draft record.
+        XCTAssertNil(restored)
+        XCTAssertTrue(coordinator.pendingAttachments.isEmpty)
+        XCTAssertNil(coordinator.uploadAttachmentErrorMessage)
+        XCTAssertTrue(delegate.failedErrors.isEmpty)
+    }
+
     private func makeCoordinator(client: APIClient) -> ChatAttachmentCoordinator {
         let coordinator = ChatAttachmentCoordinator(client: client)
         let delegate = ChatAttachmentCoordinatorDelegateSpy()

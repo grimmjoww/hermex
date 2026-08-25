@@ -1475,6 +1475,7 @@ private struct PendingNewChatView: View {
                     loadsInitialMessages: false,
                     autoStartsVoiceInput: autoStartsVoiceInput,
                     draftStore: draftStore,
+                    restoresDraftSettings: true,
                     onConversationStarted: markConversationStarted
                 )
             } else {
@@ -1594,7 +1595,7 @@ private struct PendingNewChatView: View {
         if let session {
             let sessionKey = draftKey(for: session)
             draftStore.setDraft(draftMessage, for: draftKey)
-            draftMessage = draftStore.moveDraft(from: draftKey, to: sessionKey)
+            draftMessage = draftStore.moveDraft(from: draftKey, to: sessionKey).text
             SessionHaptics.sessionCreated(isEnabled: isHapticsEnabled)
             onSessionCreated(session)
             createdSession = session
@@ -1646,8 +1647,8 @@ private struct PendingNewChatView: View {
         guard !Task.isCancelled, draftMessage == textBeforeHydration else { return }
 
         if textBeforeHydration.isEmpty {
-            if let persistedDraft {
-                draftMessage = persistedDraft
+            if let persistedDraft, !persistedDraft.text.isEmpty {
+                draftMessage = persistedDraft.text
             }
         } else {
             draftStore.setDraft(textBeforeHydration, for: draftKey)
@@ -1670,7 +1671,7 @@ private struct PendingNewChatView: View {
             from: draftKey(for: createdSession),
             to: draftKey,
             didStartConversation: didStartConversation
-        ) ?? draftMessage
+        )?.text ?? draftMessage
     }
 
     private func requestPendingComposerFocus() {
