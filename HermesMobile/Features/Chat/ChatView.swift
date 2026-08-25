@@ -424,7 +424,10 @@ struct ChatView: View {
             showsReasoningControl: viewModel.showsReasoningEffortControl,
             isUpdatingConfiguration: viewModel.isUpdatingComposerConfiguration,
             pendingAttachments: viewModel.pendingAttachments,
-            isUploadingAttachment: viewModel.isUploadingAttachment,
+            // An in-flight draft restore counts as an upload in progress: until
+            // it finishes, the composer does not yet hold the attachments the
+            // user expects this message to carry.
+            isUploadingAttachment: viewModel.isUploadingAttachment || isRestoringDraftAttachments,
             attachmentUploadCount: viewModel.attachmentUploadCount,
             attachmentUploadGeneration: viewModel.attachmentUploadGeneration,
             isSendingVoiceNote: viewModel.isSendingVoiceNote,
@@ -1565,21 +1568,22 @@ struct ChatView: View {
 
         prepareTranscriptForExplicitSend()
 
-        // Snapshot the draft's attachment records before the send consumes the
-        // staged attachments (and the observation sync rewrites the draft): on
-        // acceptance the records the send actually carried become unreferenced.
-        // Records still awaiting a re-upload retry were not staged, so the send
-        // does not consume them and their local copies must survive.
-        let retryIDs = Set(draftAttachmentsPendingRetry.map(\.id))
-        let draftAttachmentRecordsConsumedBySend = lastSyncedDraftAttachments
-            .filter { !retryIDs.contains($0.id) }
+        // Reconcile against what the composer actually staged, not against the
+        // draft's whole record set. A record that is not staged — awaiting a
+        // re-upload retry, or not yet reached by an in-flight restore — was
+        // never carried by this send, so its durable copy must survive.
+        let sendReconciliation = ChatDraftSendReconciliation.outcome(
+            draftRecords: lastSyncedDraftAttachments,
+            stagedAttachmentIDs: Set(viewModel.pendingAttachments.map(\.id))
+        )
         draftStore.setDraft(submittedDraft, for: draftKey)
         draftMessage = ""
 
         let didStart = await viewModel.sendMessage(submittedDraft, modelContext: modelContext)
         if didStart {
             onConversationStarted()
-            discardDraftAttachmentFiles(draftAttachmentRecordsConsumedBySend)
+            discardDraftAttachmentFiles(sendReconciliation.consumed)
+            draftAttachmentsPendingRetry = sendReconciliation.retained
         }
         draftMessage = draftStore.resolveSubmission(
             submittedText: submittedDraft,
@@ -1789,7 +1793,12 @@ struct ChatView: View {
     /// persisted set.
     private func syncDraftAttachments() {
         guard didHydrateDraft, !isRestoringDraftAttachments else { return }
-        let pendingRecords = viewModel.pendingAttachments.map(ChatDraftAttachment.init(pending:))
+        // Only records backed by a durable copy are persisted. Without one the
+        // record could never be restored, and keeping it would hold the draft
+        // alive just to report the attachment as lost on the next open.
+        let pendingRecords = viewModel.pendingAttachments
+            .map(ChatDraftAttachment.init(pending:))
+            .filter { $0.file != nil }
         let retryRecords = draftAttachmentsPendingRetry.filter { retry in
             !pendingRecords.contains(where: { $0.id == retry.id })
         }
@@ -1833,50 +1842,48 @@ struct ChatView: View {
         guard let settings = restoredDraftSettings, !Task.isCancelled else { return }
         guard viewModel.messages.isEmpty, viewModel.activeStreamID == nil else { return }
 
-        var baselineProfile = viewModel.selectedProfileName
-        var baselineModelID = viewModel.selectedModelID
-        var baselineModelProviderID = viewModel.selectedModelProviderID
-        var baselineWorkspace = viewModel.selectedWorkspacePath
-        var baselineEffort = viewModel.selectedReasoningEffort
+        // Each step re-reads the live selection and applies only when the
+        // restored value still differs and is still offered by this server, so
+        // a value the previous step already reseeded is not re-applied.
+        //
+        // Known limitation: this does not detect a selection the user changed
+        // by hand *while* the composer configuration was loading. That window
+        // is already owned by the configuration load itself, which applies a
+        // state snapshot captured before the load; closing it properly needs a
+        // configuration/interaction generation on the view model rather than a
+        // check here. Tracked as follow-up, deliberately not widened here.
 
         // Profile first: switching reseeds model/workspace defaults.
         if let profileName = Self.normalizedDraftValue(settings.profileName),
-           viewModel.selectedProfileName == baselineProfile,
-           profileName != baselineProfile,
+           profileName != viewModel.selectedProfileName,
            let option = viewModel.profileOptions.first(where: { $0.normalizedName == profileName }),
-           !viewModel.isSelectedProfile(option),
-           await viewModel.switchProfile(option, startNewSession: false) != nil {
-            baselineProfile = viewModel.selectedProfileName
-            baselineModelID = viewModel.selectedModelID
-            baselineModelProviderID = viewModel.selectedModelProviderID
-            baselineWorkspace = viewModel.selectedWorkspacePath
-            baselineEffort = viewModel.selectedReasoningEffort
+           !viewModel.isSelectedProfile(option) {
+            _ = await viewModel.switchProfile(option, startNewSession: false)
         }
 
+        // Search the full catalog, not just each group's primary `models`:
+        // a selection saved from the server's overflow `extra_models` must
+        // restore too. `slashAutocompleteModels` is the catalog-wide list the
+        // rest of the app already resolves against.
         if let modelID = Self.normalizedDraftValue(settings.modelID),
-           viewModel.selectedModelID == baselineModelID,
-           viewModel.selectedModelProviderID == baselineModelProviderID,
            let option = viewModel.modelCatalogGroups
-               .flatMap(\.models)
+               .flatMap(\.slashAutocompleteModels)
                .firstMatchingSelection(modelID: modelID, providerID: Self.normalizedDraftValue(settings.modelProviderID)),
-           !option.matchesSelection(modelID: baselineModelID, providerID: baselineModelProviderID),
-           await viewModel.selectComposerModel(option) {
-            baselineModelID = viewModel.selectedModelID
-            baselineModelProviderID = viewModel.selectedModelProviderID
-            baselineEffort = viewModel.selectedReasoningEffort
+           !option.matchesSelection(
+               modelID: viewModel.selectedModelID,
+               providerID: viewModel.selectedModelProviderID
+           ) {
+            _ = await viewModel.selectComposerModel(option)
         }
 
         if let workspace = Self.normalizedDraftValue(settings.workspacePath),
-           viewModel.selectedWorkspacePath == baselineWorkspace,
-           workspace != baselineWorkspace,
-           viewModel.workspaceRoots.contains(where: { $0.path == workspace }),
-           await viewModel.selectWorkspacePath(workspace) {
-            baselineWorkspace = viewModel.selectedWorkspacePath
+           workspace != viewModel.selectedWorkspacePath,
+           viewModel.workspaceRoots.contains(where: { $0.path == workspace }) {
+            _ = await viewModel.selectWorkspacePath(workspace)
         }
 
         if let effort = Self.normalizedDraftValue(settings.reasoningEffort),
-           viewModel.selectedReasoningEffort == baselineEffort,
-           effort != baselineEffort,
+           effort != viewModel.selectedReasoningEffort,
            viewModel.showsReasoningEffortControl {
             let supportedEfforts = viewModel.supportedReasoningEfforts
             // Older servers report no effort vocabulary; let the server coerce.
@@ -2005,6 +2012,17 @@ struct ChatView: View {
     /// no local file and becomes unrecoverable-on-restore instead of blocking
     /// the attach.
     private func uploadAttachmentForDraft(data: Data, filename: String, previewData: Data? = nil) async {
+        // Apply the upload's own size bound first. A file the upload will
+        // reject must never be copied into Application Support on the way, or
+        // an oversized attachment briefly consumes disk it was never entitled
+        // to. The coordinator re-checks; this is the earlier of the two gates.
+        guard data.count <= PendingAttachment.maximumUploadBytes else {
+            viewModel.setUploadAttachmentError(
+                PendingAttachment.uploadTooLargeMessage(filename: filename)
+            )
+            return
+        }
+
         let draftFileName = await draftAttachmentStore.saveIfPossible(data: data, suggestedFilename: filename)
         let uploaded = await viewModel.uploadAttachment(
             data: data,

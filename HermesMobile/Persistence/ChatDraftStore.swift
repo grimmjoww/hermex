@@ -94,6 +94,43 @@ extension ChatDraftAttachment {
     }
 }
 
+/// Decides what an accepted send does to a draft's staged attachments.
+///
+/// A send carries exactly the attachments staged in the composer at the moment
+/// it is submitted. Any other record in the draft — one still waiting on a
+/// re-upload retry, or one a restore pass has not reached yet — was never
+/// carried, so its durable copy must survive and its record must stay in the
+/// draft. Getting this wrong deletes files for attachments the user never sent.
+enum ChatDraftSendReconciliation {
+    struct Outcome: Equatable {
+        /// Records the send carried. Their durable copies are now unreferenced
+        /// and can be deleted.
+        var consumed: [ChatDraftAttachment] = []
+        /// Records the send did not carry. They stay in the draft, keep their
+        /// durable copies, and remain eligible for a later re-upload.
+        var retained: [ChatDraftAttachment] = []
+    }
+
+    /// - Parameters:
+    ///   - draftRecords: every attachment record the draft held at send time.
+    ///   - stagedAttachmentIDs: ids of the attachments actually staged in the
+    ///     composer, i.e. the ones the send submitted.
+    static func outcome(
+        draftRecords: [ChatDraftAttachment],
+        stagedAttachmentIDs: Set<UUID>
+    ) -> Outcome {
+        var outcome = Outcome()
+        for record in draftRecords {
+            if stagedAttachmentIDs.contains(record.id) {
+                outcome.consumed.append(record)
+            } else {
+                outcome.retained.append(record)
+            }
+        }
+        return outcome
+    }
+}
+
 struct ChatDraftKey: Hashable, Sendable {
     enum Context: Hashable, Sendable {
         case session(String)

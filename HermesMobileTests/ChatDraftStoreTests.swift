@@ -469,6 +469,81 @@ final class ChatDraftStoreTests: XCTestCase {
         XCTAssertEqual(sweep?.maxAge, 60)
     }
 
+    // MARK: - Send reconciliation
+
+    /// The bug this guards: a send used to discard every record the draft held,
+    /// deleting durable copies for attachments it never carried.
+    func testSendConsumesOnlyTheAttachmentsStagedInTheComposer() {
+        let staged = makeAttachmentRecord(name: "carried.txt", file: "a-carried.txt")
+        let awaitingRetry = makeAttachmentRecord(name: "retry.txt", file: "b-retry.txt")
+        let notYetRestored = makeAttachmentRecord(name: "restoring.txt", file: "c-restoring.txt")
+
+        let outcome = ChatDraftSendReconciliation.outcome(
+            draftRecords: [staged, awaitingRetry, notYetRestored],
+            stagedAttachmentIDs: [staged.id]
+        )
+
+        XCTAssertEqual(outcome.consumed.map(\.id), [staged.id])
+        XCTAssertEqual(outcome.retained.map(\.id), [awaitingRetry.id, notYetRestored.id])
+    }
+
+    /// Sending while a restore has staged nothing yet must not consume — and so
+    /// must not delete the local copies of — any record.
+    func testSendDuringAnUnstartedRestoreConsumesNothing() {
+        let records = [
+            makeAttachmentRecord(name: "one.txt", file: "a-one.txt"),
+            makeAttachmentRecord(name: "two.txt", file: "b-two.txt")
+        ]
+
+        let outcome = ChatDraftSendReconciliation.outcome(
+            draftRecords: records,
+            stagedAttachmentIDs: []
+        )
+
+        XCTAssertTrue(outcome.consumed.isEmpty)
+        XCTAssertEqual(outcome.retained.map(\.id), records.map(\.id))
+    }
+
+    func testSendConsumesEveryRecordWhenAllAreStaged() {
+        let records = [
+            makeAttachmentRecord(name: "one.txt", file: "a-one.txt"),
+            makeAttachmentRecord(name: "two.txt", file: "b-two.txt")
+        ]
+
+        let outcome = ChatDraftSendReconciliation.outcome(
+            draftRecords: records,
+            stagedAttachmentIDs: Set(records.map(\.id))
+        )
+
+        XCTAssertEqual(outcome.consumed.map(\.id), records.map(\.id))
+        XCTAssertTrue(outcome.retained.isEmpty)
+    }
+
+    /// A staged attachment the draft never recorded (its durable copy failed to
+    /// write) contributes nothing to either side.
+    func testSendIgnoresStagedAttachmentsWithNoDraftRecord() {
+        let recorded = makeAttachmentRecord(name: "recorded.txt", file: "a-recorded.txt")
+
+        let outcome = ChatDraftSendReconciliation.outcome(
+            draftRecords: [recorded],
+            stagedAttachmentIDs: [recorded.id, UUID()]
+        )
+
+        XCTAssertEqual(outcome.consumed.map(\.id), [recorded.id])
+        XCTAssertTrue(outcome.retained.isEmpty)
+    }
+
+    private func makeAttachmentRecord(name: String, file: String?) -> ChatDraftAttachment {
+        ChatDraftAttachment(
+            id: UUID(),
+            name: name,
+            mime: "text/plain",
+            size: 5,
+            isImage: false,
+            file: file
+        )
+    }
+
     func testFilePersistenceUsesVersionedLossyDecoding() async throws {
         let directory = temporaryDirectory()
         defer { try? FileManager.default.removeItem(at: directory) }
