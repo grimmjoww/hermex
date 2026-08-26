@@ -2,9 +2,9 @@ import Foundation
 import os
 
 /// One staged composer attachment as referenced by a persisted draft. `file`
-/// names the durable app-owned copy in `ChatDraftAttachmentStore`; it is nil
-/// when the copy could not be written, making the record unrecoverable on
-/// restore instead of pointing at a dead reference.
+/// names the durable app-owned copy in `ChatDraftAttachmentStore`. It remains
+/// optional so older or partially corrupt persisted records decode safely;
+/// newly staged attachments are not accepted without a durable copy.
 struct ChatDraftAttachment: Equatable, Sendable {
     let id: UUID
     let name: String
@@ -515,6 +515,21 @@ final class ChatDraftStore {
         }
     }
 
+    /// Removes one composer draft and deletes attachment copies that no other
+    /// draft still references. Used after the server accepts session deletion.
+    func discardDraft(for key: ChatDraftKey) async {
+        await loadIfNeeded()
+        await discardDrafts(matching: { $0 == key })
+    }
+
+    /// Removes every composer draft owned by a server before that server is
+    /// removed from the app.
+    func discardDrafts(for server: URL) async {
+        await loadIfNeeded()
+        let serverID = server.absoluteString
+        await discardDrafts(matching: { $0.serverID == serverID })
+    }
+
     /// Clears the draft's typed text. Attachments and settings are managed
     /// separately (attachments sync from the composer observationally).
     func clearDraft(for key: ChatDraftKey) {
@@ -617,6 +632,22 @@ final class ChatDraftStore {
             drafts[key] = draft
         }
         schedulePersist()
+    }
+
+    private func discardDrafts(matching shouldDiscard: (ChatDraftKey) -> Bool) async {
+        let discardedKeys = drafts.keys.filter(shouldDiscard)
+        guard !discardedKeys.isEmpty else { return }
+
+        let discardedDrafts = discardedKeys.compactMap { drafts.removeValue(forKey: $0) }
+        let stillReferencedFiles = Set(drafts.values.flatMap { $0.attachments.compactMap(\.file) })
+        let filesToDelete = Set(discardedDrafts.flatMap { $0.attachments.compactMap(\.file) })
+            .subtracting(stillReferencedFiles)
+        schedulePersist()
+
+        guard let attachmentStore else { return }
+        for fileName in filesToDelete.sorted() {
+            await attachmentStore.delete(named: fileName)
+        }
     }
 
     private func markChangedBeforeLoad(_ key: ChatDraftKey) {

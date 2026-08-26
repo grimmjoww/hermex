@@ -103,15 +103,6 @@ final class ChatDraftAttachmentStoreTests: XCTestCase {
         XCTAssertEqual(keptData, Data("keep".utf8))
     }
 
-    func testSaveIfPossibleIsBestEffort() async throws {
-        let directory = temporaryDirectory()
-        defer { try? FileManager.default.removeItem(at: directory) }
-        let store = ChatDraftAttachmentStore(directoryURL: directory)
-
-        let fileName = await store.saveIfPossible(data: Data("bytes".utf8), suggestedFilename: "photo.jpg")
-        XCTAssertNotNil(fileName)
-    }
-
     // MARK: - Read-failure classification
 
     /// A record is only dropped from a draft when its copy is genuinely gone.

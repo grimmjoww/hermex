@@ -469,6 +469,65 @@ final class ChatDraftStoreTests: XCTestCase {
         XCTAssertEqual(sweep?.maxAge, 60)
     }
 
+    func testDiscardDraftDeletesItsAttachmentCopiesAndKeepsOtherDrafts() async {
+        let server = URL(string: "https://one.example")!
+        let firstKey = ChatDraftKey.session(server: server, sessionID: "session-1")
+        let secondKey = ChatDraftKey.session(server: server, sessionID: "session-2")
+        let persistence = RecordingChatDraftPersistence(initialDrafts: [
+            firstKey: ChatDraft(
+                text: "discard me",
+                attachments: [Self.sampleAttachment(file: "first.txt")]
+            ),
+            secondKey: ChatDraft(
+                text: "keep me",
+                attachments: [Self.sampleAttachment(file: "second.txt")]
+            )
+        ])
+        let attachmentStore = RecordingChatDraftAttachmentStore()
+        let store = ChatDraftStore(
+            persistence: persistence,
+            attachmentStore: attachmentStore,
+            debounceDuration: .zero
+        )
+
+        await store.discardDraft(for: firstKey)
+        try? await store.flush()
+
+        let firstDraft = await store.draft(for: firstKey)
+        let secondDraft = await store.draft(for: secondKey)
+        let deletedNames = await attachmentStore.deletedNames()
+        XCTAssertNil(firstDraft)
+        XCTAssertEqual(secondDraft?.text, "keep me")
+        XCTAssertEqual(deletedNames, ["first.txt"])
+    }
+
+    func testDiscardDraftsForServerDeletesOnlyThatServersCopies() async {
+        let firstServer = URL(string: "https://one.example")!
+        let secondServer = URL(string: "https://two.example")!
+        let firstKey = ChatDraftKey.session(server: firstServer, sessionID: "session-1")
+        let secondKey = ChatDraftKey.session(server: secondServer, sessionID: "session-2")
+        let persistence = RecordingChatDraftPersistence(initialDrafts: [
+            firstKey: ChatDraft(attachments: [Self.sampleAttachment(file: "first.txt")]),
+            secondKey: ChatDraft(attachments: [Self.sampleAttachment(file: "second.txt")])
+        ])
+        let attachmentStore = RecordingChatDraftAttachmentStore()
+        let store = ChatDraftStore(
+            persistence: persistence,
+            attachmentStore: attachmentStore,
+            debounceDuration: .zero
+        )
+
+        await store.discardDrafts(for: firstServer)
+        try? await store.flush()
+
+        let firstDraft = await store.draft(for: firstKey)
+        let secondDraft = await store.draft(for: secondKey)
+        let deletedNames = await attachmentStore.deletedNames()
+        XCTAssertNil(firstDraft)
+        XCTAssertEqual(secondDraft?.attachments.first?.file, "second.txt")
+        XCTAssertEqual(deletedNames, ["first.txt"])
+    }
+
     // MARK: - Send reconciliation
 
     /// The bug this guards: a send used to discard every record the draft held,
@@ -867,6 +926,7 @@ private actor BlockingChatDraftPersistence: ChatDraftPersisting {
 private actor RecordingChatDraftAttachmentStore: ChatDraftAttachmentStoring {
     private var sweeps: [(referenced: Set<String>, maxAge: TimeInterval)] = []
     private var sweepContinuations: [CheckedContinuation<Void, Never>] = []
+    private var deletes: [String] = []
 
     func save(data: Data, suggestedFilename: String) async throws -> String {
         suggestedFilename
@@ -876,7 +936,9 @@ private actor RecordingChatDraftAttachmentStore: ChatDraftAttachmentStoring {
         Data()
     }
 
-    func delete(named fileName: String) async {}
+    func delete(named fileName: String) async {
+        deletes.append(fileName)
+    }
 
     func sweep(keepingReferenced fileNames: Set<String>, olderThan maxAge: TimeInterval) async {
         sweeps.append((fileNames, maxAge))
@@ -895,5 +957,9 @@ private actor RecordingChatDraftAttachmentStore: ChatDraftAttachmentStoring {
             sweepContinuations.append(continuation)
         }
         return sweeps.first
+    }
+
+    func deletedNames() -> [String] {
+        deletes
     }
 }

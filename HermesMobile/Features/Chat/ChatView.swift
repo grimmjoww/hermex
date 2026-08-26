@@ -368,7 +368,8 @@ struct ChatView: View {
         self.loadsInitialMessages = loadsInitialMessages
         self.autoStartsVoiceInput = autoStartsVoiceInput
         self.draftStore = draftStore ?? .shared
-        self.draftAttachmentStore = draftAttachmentStore ?? ChatDraftAttachmentStore.shared
+        let resolvedDraftAttachmentStore = draftAttachmentStore ?? ChatDraftAttachmentStore.shared
+        self.draftAttachmentStore = resolvedDraftAttachmentStore
         self.restoresDraftSettings = restoresDraftSettings
         self.onConversationStarted = onConversationStarted
         _draftMessage = State(initialValue: initialDraft)
@@ -378,7 +379,8 @@ struct ChatView: View {
             server: server,
             showsLiveActivityResponseExcerpts: UserDefaults.standard.bool(
                 forKey: AgentRunLiveActivityPrivacy.showsResponseExcerptsKey
-            )
+            ),
+            draftAttachmentStore: resolvedDraftAttachmentStore
         ))
         _gitAvailabilityViewModel = State(initialValue: GitWorkspaceAvailabilityViewModel(
             session: session,
@@ -1379,6 +1381,7 @@ struct ChatView: View {
 
     private func performInitialAsyncWork() async {
         guard !Task.isCancelled else { return }
+        let draftSettingsInteractionGeneration = viewModel.composerConfigurationInteractionGeneration
 
         if loadsInitialMessages {
             await loadMessages(appliesInitialFocus: false)
@@ -1391,7 +1394,9 @@ struct ChatView: View {
         await viewModel.loadComposerConfiguration()
         guard !Task.isCancelled else { return }
 
-        await applyRestoredDraftSettingsIfNeeded()
+        await applyRestoredDraftSettingsIfNeeded(
+            expectedInteractionGeneration: draftSettingsInteractionGeneration
+        )
         guard !Task.isCancelled else { return }
 
         await viewModel.refreshApprovalBypassState()
@@ -1582,7 +1587,6 @@ struct ChatView: View {
         let didStart = await viewModel.sendMessage(submittedDraft, modelContext: modelContext)
         if didStart {
             onConversationStarted()
-            discardDraftAttachmentFiles(sendReconciliation.consumed)
             draftAttachmentsPendingRetry = sendReconciliation.retained
         }
         draftMessage = draftStore.resolveSubmission(
@@ -1747,7 +1751,8 @@ struct ChatView: View {
                 break
             }
             guard let fileName = record.file else {
-                // No durable copy was ever written for this record.
+                // Tolerate an older or partially corrupt record that predates
+                // the durable-staging invariant.
                 unrecoverableCount += 1
                 continue
             }
@@ -1846,82 +1851,18 @@ struct ChatView: View {
         )
     }
 
-    /// New-chat only: replays the restored draft's settings through the
-    /// existing validated selection paths once the live server configuration
-    /// has loaded. Each field applies only when it still differs, is known to
-    /// the current server configuration, and the user hasn't touched the field
-    /// since load (tracked baselines). Server rejections roll back through the
-    /// existing selection error handling.
-    private func applyRestoredDraftSettingsIfNeeded() async {
+    /// New-chat only. The view owns the one-shot restore trigger while the
+    /// model owns validation, interaction fencing, and profile ordering.
+    private func applyRestoredDraftSettingsIfNeeded(
+        expectedInteractionGeneration: Int
+    ) async {
         guard restoresDraftSettings, !didApplyRestoredDraftSettings else { return }
         didApplyRestoredDraftSettings = true
         guard let settings = restoredDraftSettings, !Task.isCancelled else { return }
-        guard viewModel.messages.isEmpty, viewModel.activeStreamID == nil else { return }
-
-        // Each step re-reads the live selection and applies only when the
-        // restored value still differs and is still offered by this server, so
-        // a value the previous step already reseeded is not re-applied.
-        //
-        // Known limitation: this does not detect a selection the user changed
-        // by hand *while* the composer configuration was loading. That window
-        // is already owned by the configuration load itself, which applies a
-        // state snapshot captured before the load; closing it properly needs a
-        // configuration/interaction generation on the view model rather than a
-        // check here. Tracked as follow-up, deliberately not widened here.
-
-        // Profile first: switching reseeds model/workspace defaults.
-        if let profileName = Self.normalizedDraftValue(settings.profileName),
-           profileName != viewModel.selectedProfileName,
-           let option = viewModel.profileOptions.first(where: { $0.normalizedName == profileName }),
-           !viewModel.isSelectedProfile(option) {
-            _ = await viewModel.switchProfile(option, startNewSession: false)
-        }
-
-        // Search the full catalog, not just each group's primary `models`:
-        // a selection saved from the server's overflow `extra_models` must
-        // restore too. `slashAutocompleteModels` is the catalog-wide list the
-        // rest of the app already resolves against.
-        if let modelID = Self.normalizedDraftValue(settings.modelID),
-           let option = viewModel.modelCatalogGroups
-               .flatMap(\.slashAutocompleteModels)
-               .firstMatchingSelection(modelID: modelID, providerID: Self.normalizedDraftValue(settings.modelProviderID)),
-           !option.matchesSelection(
-               modelID: viewModel.selectedModelID,
-               providerID: viewModel.selectedModelProviderID
-           ) {
-            _ = await viewModel.selectComposerModel(option)
-        }
-
-        if let workspace = Self.normalizedDraftValue(settings.workspacePath),
-           workspace != viewModel.selectedWorkspacePath,
-           viewModel.workspaceRoots.contains(where: { $0.path == workspace }) {
-            _ = await viewModel.selectWorkspacePath(workspace)
-        }
-
-        if let effort = Self.normalizedDraftValue(settings.reasoningEffort),
-           effort != viewModel.selectedReasoningEffort,
-           viewModel.showsReasoningEffortControl {
-            let supportedEfforts = viewModel.supportedReasoningEfforts
-            // Older servers report no effort vocabulary; let the server coerce.
-            if supportedEfforts == nil || supportedEfforts?.contains(effort.lowercased()) == true {
-                _ = await viewModel.selectReasoningEffort(effort)
-            }
-        }
-    }
-
-    private static func normalizedDraftValue(_ raw: String?) -> String? {
-        let trimmed = raw?.trimmingCharacters(in: .whitespacesAndNewlines)
-        return trimmed?.isEmpty == false ? trimmed : nil
-    }
-
-    /// Deletes the durable local copies of draft attachment records. Called
-    /// when a send is accepted: the message now owns the server-side uploads
-    /// and the draft copies are unreferenced.
-    private func discardDraftAttachmentFiles(_ records: [ChatDraftAttachment]) {
-        for record in records {
-            guard let file = record.file else { continue }
-            Task { await draftAttachmentStore.delete(named: file) }
-        }
+        await viewModel.restoreDraftSettings(
+            settings,
+            expectedInteractionGeneration: expectedInteractionGeneration
+        )
     }
 
     private func reconcileConsumedDraft(
@@ -1966,6 +1907,7 @@ struct ChatView: View {
     }
 
     private func handleProfileSelection(_ profile: ProfileSummary) {
+        viewModel.markComposerConfigurationInteraction()
         if viewModel.isSelectedProfile(profile) {
             return
         }
@@ -1979,7 +1921,11 @@ struct ChatView: View {
     }
 
     private func switchProfile(_ profile: ProfileSummary, startNewSession: Bool) async {
-        let outcome = await viewModel.switchProfile(profile, startNewSession: startNewSession)
+        let outcome = await viewModel.switchProfile(
+            profile,
+            startNewSession: startNewSession,
+            recordsInteraction: false
+        )
         pendingProfileSelection = nil
 
         if let lastError = viewModel.lastError {
@@ -2002,7 +1948,7 @@ struct ChatView: View {
 
         didUploadInitialAttachments = true
         for attachment in initialAttachments {
-            await uploadAttachmentForDraft(
+            await viewModel.uploadAttachment(
                 data: attachment.data,
                 filename: attachment.filename,
                 previewData: previewData(for: attachment)
@@ -2021,36 +1967,6 @@ struct ChatView: View {
         return imageExtensions.contains(fileExtension) ? attachment.data : nil
     }
 
-    /// Stages a picked/pasted/shared file: writes its durable app-owned draft
-    /// copy first, then uploads. If the upload fails the copy is deleted again
-    /// so neither the draft nor the disk keeps a reference to it. If the copy
-    /// itself fails, the upload still proceeds — the draft record then carries
-    /// no local file and becomes unrecoverable-on-restore instead of blocking
-    /// the attach.
-    private func uploadAttachmentForDraft(data: Data, filename: String, previewData: Data? = nil) async {
-        // Apply the upload's own size bound first. A file the upload will
-        // reject must never be copied into Application Support on the way, or
-        // an oversized attachment briefly consumes disk it was never entitled
-        // to. The coordinator re-checks; this is the earlier of the two gates.
-        guard data.count <= PendingAttachment.maximumUploadBytes else {
-            viewModel.setUploadAttachmentError(
-                PendingAttachment.uploadTooLargeMessage(filename: filename)
-            )
-            return
-        }
-
-        let draftFileName = await draftAttachmentStore.saveIfPossible(data: data, suggestedFilename: filename)
-        let uploaded = await viewModel.uploadAttachment(
-            data: data,
-            filename: filename,
-            previewData: previewData,
-            draftFileName: draftFileName
-        )
-        if uploaded == nil, let draftFileName {
-            await draftAttachmentStore.delete(named: draftFileName)
-        }
-    }
-
     private func handlePhotoSelection(_ item: PhotosPickerItem) async {
         do {
             guard let data = try await item.loadTransferable(type: Data.self) else {
@@ -2058,7 +1974,7 @@ struct ChatView: View {
                 return
             }
             let filename = "image_\(Int(Date().timeIntervalSince1970))_\(UUID().uuidString.prefix(4)).jpg"
-            await uploadAttachmentForDraft(data: data, filename: filename, previewData: data)
+            await viewModel.uploadAttachment(data: data, filename: filename, previewData: data)
         } catch {
             viewModel.setUploadAttachmentError(error.localizedDescription)
         }
@@ -2075,7 +1991,7 @@ struct ChatView: View {
         for url in fileURLs {
             do {
                 let file = try loadPastedFile(from: url, suggestedName: nil)
-                await uploadAttachmentForDraft(data: file.data, filename: file.filename)
+                await viewModel.uploadAttachment(data: file.data, filename: file.filename)
             } catch {
                 viewModel.setUploadAttachmentError(error.localizedDescription)
             }
@@ -2095,7 +2011,7 @@ struct ChatView: View {
         for provider in fileProviders {
             do {
                 let file = try await loadPastedFile(from: provider)
-                await uploadAttachmentForDraft(data: file.data, filename: file.filename)
+                await viewModel.uploadAttachment(data: file.data, filename: file.filename)
             } catch {
                 viewModel.setUploadAttachmentError(error.localizedDescription)
             }
@@ -2115,7 +2031,7 @@ struct ChatView: View {
         for provider in imageProviders {
             do {
                 let image = try await loadPastedImage(from: provider)
-                await uploadAttachmentForDraft(data: image.data, filename: image.filename, previewData: image.data)
+                await viewModel.uploadAttachment(data: image.data, filename: image.filename, previewData: image.data)
             } catch {
                 viewModel.setUploadAttachmentError(error.localizedDescription)
             }
@@ -2134,7 +2050,7 @@ struct ChatView: View {
                 continue
             }
 
-            await uploadAttachmentForDraft(data: data, filename: pastedImageFilename(), previewData: data)
+            await viewModel.uploadAttachment(data: data, filename: pastedImageFilename(), previewData: data)
         }
     }
 
@@ -2174,7 +2090,7 @@ struct ChatView: View {
         for url in fileURLs {
             do {
                 let file = try loadPastedFile(from: url, suggestedName: nil)
-                await uploadAttachmentForDraft(data: file.data, filename: file.filename)
+                await viewModel.uploadAttachment(data: file.data, filename: file.filename)
             } catch {
                 viewModel.setUploadAttachmentError(error.localizedDescription)
             }

@@ -17,15 +17,6 @@ protocol ChatDraftAttachmentStoring: Sendable {
     func sweep(keepingReferenced fileNames: Set<String>, olderThan maxAge: TimeInterval) async
 }
 
-extension ChatDraftAttachmentStoring {
-    /// Best-effort variant for ingest: a copy failure must not block the
-    /// upload; the draft record simply carries no local file and becomes
-    /// unrecoverable-on-restore instead.
-    func saveIfPossible(data: Data, suggestedFilename: String) async -> String? {
-        try? await save(data: data, suggestedFilename: suggestedFilename)
-    }
-}
-
 /// Why a draft attachment's durable copy could not be read, and therefore
 /// whether its record is worth keeping.
 ///

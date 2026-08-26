@@ -19,7 +19,8 @@ struct PendingAttachment: Identifiable, Equatable {
     let isImage: Bool
     let thumbnailData: Data?
     /// File name of the durable app-owned draft copy in ChatDraftAttachmentStore.
-    /// Nil for standalone sends (voice notes) and when the copy could not be written.
+    /// Fresh composer attachments always have one; standalone sends such as voice
+    /// notes do not participate in draft persistence and leave it nil.
     let draftFileName: String?
 
     init(

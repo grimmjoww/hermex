@@ -88,6 +88,29 @@ final class ChatAttachmentCoordinatorTests: APIClientTestCase {
         XCTAssertEqual(coordinator.uploadAttachmentErrorMessage, "Upload failed.")
     }
 
+    func testDraftCopyFailureStopsBeforeNetworkUpload() async {
+        var requestCount = 0
+        let client = makeClient { request in
+            requestCount += 1
+            return apiTestJSONResponse(#"{"error":"unexpected upload"}"#, for: request)
+        }
+        let store = RecordingAttachmentStore(saveError: CocoaError(.fileWriteOutOfSpace))
+        let coordinator = makeCoordinator(client: client, attachmentStore: store)
+
+        let uploaded = await coordinator.uploadAttachment(
+            data: Data("notes".utf8),
+            filename: "notes.txt"
+        )
+
+        XCTAssertNil(uploaded)
+        XCTAssertEqual(requestCount, 0)
+        XCTAssertTrue(coordinator.pendingAttachments.isEmpty)
+        XCTAssertEqual(
+            coordinator.uploadAttachmentErrorMessage,
+            "Could not save the attachment on this device."
+        )
+    }
+
     func testConcurrentUploadsKeepUploadingStateUntilAllUploadsFinish() async throws {
         let firstUploadStarted = expectation(description: "first upload started")
         let uploadState = DeferredUploadState()
@@ -320,16 +343,18 @@ final class ChatAttachmentCoordinatorTests: APIClientTestCase {
                 for: request
             )
         }
-        let coordinator = makeCoordinator(client: client)
+        let store = RecordingAttachmentStore()
+        let coordinator = makeCoordinator(client: client, attachmentStore: store)
 
         let uploaded = await coordinator.uploadAttachment(
             data: Data("notes".utf8),
-            filename: "notes.txt",
-            draftFileName: "abc-notes.txt"
+            filename: "notes.txt"
         )
 
-        XCTAssertEqual(uploaded?.draftFileName, "abc-notes.txt")
-        XCTAssertEqual(coordinator.pendingAttachments.first?.draftFileName, "abc-notes.txt")
+        XCTAssertEqual(uploaded?.draftFileName, "saved-1-notes.txt")
+        XCTAssertEqual(coordinator.pendingAttachments.first?.draftFileName, "saved-1-notes.txt")
+        let savedNames = await store.savedNames()
+        XCTAssertEqual(savedNames, ["saved-1-notes.txt"])
     }
 
     func testStandaloneUploadNeverCarriesADraftFileName() async throws {
@@ -427,8 +452,14 @@ final class ChatAttachmentCoordinatorTests: APIClientTestCase {
         XCTAssertTrue(delegate.failedErrors.isEmpty)
     }
 
-    private func makeCoordinator(client: APIClient) -> ChatAttachmentCoordinator {
-        let coordinator = ChatAttachmentCoordinator(client: client)
+    private func makeCoordinator(
+        client: APIClient,
+        attachmentStore: (any ChatDraftAttachmentStoring)? = nil
+    ) -> ChatAttachmentCoordinator {
+        let coordinator = ChatAttachmentCoordinator(
+            client: client,
+            draftAttachmentStore: attachmentStore ?? RecordingAttachmentStore()
+        )
         let delegate = ChatAttachmentCoordinatorDelegateSpy()
         delegateSpies.append(delegate)
         coordinator.delegate = delegate
@@ -484,6 +515,43 @@ final class ChatAttachmentCoordinatorTests: APIClientTestCase {
         let filenameStart = markerRange.upperBound
         let filenameEnd = try XCTUnwrap(data[filenameStart...].range(of: quote)).lowerBound
         return String(decoding: data[filenameStart..<filenameEnd], as: UTF8.self)
+    }
+}
+
+private actor RecordingAttachmentStore: ChatDraftAttachmentStoring {
+    private let saveError: Error?
+    private var saves: [String] = []
+    private var deletes: [String] = []
+
+    init(saveError: Error? = nil) {
+        self.saveError = saveError
+    }
+
+    func save(data: Data, suggestedFilename: String) async throws -> String {
+        if let saveError {
+            throw saveError
+        }
+        let fileName = "saved-\(saves.count + 1)-\(URL(fileURLWithPath: suggestedFilename).lastPathComponent)"
+        saves.append(fileName)
+        return fileName
+    }
+
+    func data(named fileName: String) async throws -> Data {
+        Data()
+    }
+
+    func delete(named fileName: String) async {
+        deletes.append(fileName)
+    }
+
+    func sweep(keepingReferenced fileNames: Set<String>, olderThan maxAge: TimeInterval) async {}
+
+    func savedNames() -> [String] {
+        saves
+    }
+
+    func deletedNames() -> [String] {
+        deletes
     }
 }
 

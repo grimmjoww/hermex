@@ -25678,6 +25678,25 @@
         }
       }
     },
+    "Could not save the attachment on this device." : { "localizations" : {
+      "de" : { "stringUnit" : { "state" : "translated", "value" : "Der Anhang konnte auf diesem Gerät nicht gespeichert werden." } },
+      "es" : { "stringUnit" : { "state" : "translated", "value" : "No se pudo guardar el archivo adjunto en este dispositivo." } },
+      "fr" : { "stringUnit" : { "state" : "translated", "value" : "Impossible d’enregistrer la pièce jointe sur cet appareil." } },
+      "it" : { "stringUnit" : { "state" : "translated", "value" : "Impossibile salvare l’allegato su questo dispositivo." } },
+      "pl" : { "stringUnit" : { "state" : "translated", "value" : "Nie udało się zapisać załącznika na tym urządzeniu." } },
+      "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Não foi possível salvar o anexo neste dispositivo." } },
+      "nl" : { "stringUnit" : { "state" : "translated", "value" : "De bijlage kan niet op dit apparaat worden opgeslagen." } },
+      "tr" : { "stringUnit" : { "state" : "translated", "value" : "Ek bu aygıta kaydedilemedi." } },
+      "ru" : { "stringUnit" : { "state" : "translated", "value" : "Не удалось сохранить вложение на этом устройстве." } },
+      "ja" : { "stringUnit" : { "state" : "translated", "value" : "このデバイスに添付ファイルを保存できませんでした。" } },
+      "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无法将附件存储到此设备。" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "이 기기에 첨부 파일을 저장할 수 없습니다." } },
+      "ar" : { "stringUnit" : { "state" : "translated", "value" : "تعذر حفظ المرفق على هذا الجهاز." } },
+      "he" : { "stringUnit" : { "state" : "translated", "value" : "לא ניתן לשמור את הקובץ המצורף במכשיר הזה." } },
+      "ur" : { "stringUnit" : { "state" : "translated", "value" : "اس ڈیوائس پر منسلکہ محفوظ نہیں کیا جا سکا۔" } },
+      "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "無法將附件儲存到此裝置。" } },
+      "zh-HK" : { "stringUnit" : { "state" : "translated", "value" : "無法將附件儲存到此裝置。" } }
+    } },
     "Could not save memory." : {
       "localizations" : {
         "ar" : {
