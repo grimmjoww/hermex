@@ -376,6 +376,150 @@ final class CronManagementViewModelTests: XCTestCase {
         return APIClient(baseURL: URL(string: "https://example.test")!, session: session)
     }
 
+    @MainActor
+    func testTaskDetailViewModelLoadsRunHistoryAndStopsAtTotal() async throws {
+        let client = makeClient { request in
+            switch request.url?.path {
+            case "/api/crons/history":
+                return apiTestJSONResponse("""
+                {
+                  "job_id": "job123",
+                  "runs": [{"filename": "run-1.md", "size": 100, "modified": 1788300000}],
+                  "total": 1,
+                  "offset": 0
+                }
+                """, for: request)
+            default:
+                XCTFail("Unexpected request: \(request.url?.path ?? "nil")")
+                return apiTestJSONResponse("{}", for: request)
+            }
+        }
+        let viewModel = TaskDetailViewModel(
+            job: try decodeCronJob(#"{"id": "job123", "name": "Digest"}"#),
+            runningElapsed: nil,
+            server: try XCTUnwrap(URL(string: "https://example.test")),
+            client: client
+        )
+
+        await viewModel.loadRunHistory()
+
+        XCTAssertEqual(viewModel.runHistory.map(\.filename), ["run-1.md"])
+        XCTAssertEqual(viewModel.runHistoryTotal, 1)
+        XCTAssertFalse(viewModel.canLoadMoreRunHistory)
+        XCTAssertNil(viewModel.historyErrorMessage)
+    }
+
+    @MainActor
+    func testTaskDetailViewModelLoadMoreRunHistoryAppendsNextPage() async throws {
+        final class OffsetBox: @unchecked Sendable {
+            var offsets: [String] = []
+        }
+        let box = OffsetBox()
+
+        let client = makeClient { request in
+            switch request.url?.path {
+            case "/api/crons/history":
+                let components = URLComponents(url: try XCTUnwrap(request.url), resolvingAgainstBaseURL: false)
+                let query = Dictionary(uniqueKeysWithValues: (components?.queryItems ?? []).map { ($0.name, $0.value) })
+                box.offsets.append(query["offset"] ?? "nil")
+                if query["offset"] == "0" {
+                    return apiTestJSONResponse("""
+                    {"job_id": "job123", "runs": [{"filename": "run-1.md"}, {"filename": "run-2.md"}], "total": 3, "offset": 0}
+                    """, for: request)
+                }
+                return apiTestJSONResponse("""
+                {"job_id": "job123", "runs": [{"filename": "run-3.md"}], "total": 3, "offset": 2}
+                """, for: request)
+            default:
+                XCTFail("Unexpected request: \(request.url?.path ?? "nil")")
+                return apiTestJSONResponse("{}", for: request)
+            }
+        }
+        let viewModel = TaskDetailViewModel(
+            job: try decodeCronJob(#"{"id": "job123", "name": "Digest"}"#),
+            runningElapsed: nil,
+            server: try XCTUnwrap(URL(string: "https://example.test")),
+            client: client
+        )
+
+        await viewModel.loadRunHistory()
+        let didLoadMore = await viewModel.loadMoreRunHistory()
+
+        XCTAssertTrue(didLoadMore)
+        XCTAssertEqual(viewModel.runHistory.map(\.filename), ["run-1.md", "run-2.md", "run-3.md"])
+        XCTAssertEqual(box.offsets, ["0", "2"])
+        XCTAssertFalse(viewModel.canLoadMoreRunHistory)
+    }
+
+    @MainActor
+    func testTaskDetailViewModelHistoryFailureKeepsPrimaryContentUsable() async throws {
+        let client = makeClient { request in
+            switch request.url?.path {
+            case "/api/crons/history":
+                let response = HTTPURLResponse(
+                    url: request.url!,
+                    statusCode: 500,
+                    httpVersion: nil,
+                    headerFields: ["Content-Type": "application/json"]
+                )!
+                return (response, Data(#"{"error": "boom"}"#.utf8))
+            case "/api/crons/output":
+                return apiTestJSONResponse("""
+                {"job_id": "job123", "outputs": [{"filename": "out.md", "content": "hello"}]}
+                """, for: request)
+            case "/api/crons/delivery-options":
+                return apiTestJSONResponse("{}", for: request)
+            default:
+                XCTFail("Unexpected request: \(request.url?.path ?? "nil")")
+                return apiTestJSONResponse("{}", for: request)
+            }
+        }
+        let viewModel = TaskDetailViewModel(
+            job: try decodeCronJob(#"{"id": "job123", "name": "Digest"}"#),
+            runningElapsed: nil,
+            server: try XCTUnwrap(URL(string: "https://example.test")),
+            client: client
+        )
+
+        await viewModel.load()
+        await viewModel.loadRunHistory()
+
+        XCTAssertNotNil(viewModel.historyErrorMessage)
+        XCTAssertTrue(viewModel.runHistory.isEmpty, "History failure must not fabricate runs.")
+        XCTAssertEqual(viewModel.outputs.first?.filename, "out.md", "Primary recent-output content must stay intact.")
+        XCTAssertNil(viewModel.errorMessage)
+    }
+
+    @MainActor
+    func testTaskDetailViewModelLoadRunDetailFetchesContentAndClears() async throws {
+        let client = makeClient { request in
+            XCTAssertEqual(request.url?.path, "/api/crons/run")
+            let components = URLComponents(url: try XCTUnwrap(request.url), resolvingAgainstBaseURL: false)
+            let query = Dictionary(uniqueKeysWithValues: (components?.queryItems ?? []).map { ($0.name, $0.value) })
+            XCTAssertEqual(query["job_id"], "job123")
+            XCTAssertEqual(query["filename"], "run-1.md")
+
+            return apiTestJSONResponse("""
+            {"job_id": "job123", "filename": "run-1.md", "content": "Full run body", "snippet": "Full run body"}
+            """, for: request)
+        }
+        let viewModel = TaskDetailViewModel(
+            job: try decodeCronJob(#"{"id": "job123", "name": "Digest"}"#),
+            runningElapsed: nil,
+            server: try XCTUnwrap(URL(string: "https://example.test")),
+            client: client
+        )
+
+        await viewModel.loadRunDetail(filename: "run-1.md")
+
+        XCTAssertEqual(viewModel.loadedRunDetail?.content, "Full run body")
+        XCTAssertNil(viewModel.runDetailErrorMessage)
+
+        viewModel.clearRunDetail()
+        XCTAssertNil(viewModel.loadedRunDetail)
+        XCTAssertNil(viewModel.runDetailErrorMessage)
+    }
+
     private func decodeCronJob(_ json: String) throws -> CronJob {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase

@@ -8,6 +8,13 @@ final class TaskDetailViewModel {
     private(set) var runningElapsed: Double?
 
     private(set) var outputs: [CronOutputItem] = []
+    private(set) var runHistory: [CronRunEntry] = []
+    private(set) var runHistoryTotal: Int?
+    private(set) var isLoadingHistory = false
+    private(set) var historyErrorMessage: String?
+    private(set) var loadedRunDetail: CronRunDetailResponse?
+    private(set) var isLoadingRunDetail = false
+    private(set) var runDetailErrorMessage: String?
     /// Server-provided deliver targets; `nil` while unknown or when the
     /// endpoint is unavailable (the editor then falls back to free text).
     private(set) var deliveryOptions: [CronDeliveryOption]?
@@ -19,6 +26,8 @@ final class TaskDetailViewModel {
     private(set) var lastMutation: CronJobListMutation?
 
     private let client: APIClient
+
+    private static let runHistoryPageSize = 50
 
     init(job: CronJob, runningElapsed: Double?, server: URL, client: APIClient? = nil) {
         self.job = job
@@ -50,6 +59,86 @@ final class TaskDetailViewModel {
         }
 
         deliveryOptions = await deliveryOptionsResponse?.platforms
+    }
+
+    /// Loads the first page of run history. History is an optional enhancement:
+    /// a failure never blocks the detail screen (the recent-output section is
+    /// the primary content), it only shows a small inline error.
+    func loadRunHistory() async {
+        guard let jobID = job.jobId else { return }
+
+        isLoadingHistory = true
+        historyErrorMessage = nil
+        defer { isLoadingHistory = false }
+
+        do {
+            let response = try await client.cronRunHistory(jobID: jobID, offset: 0, limit: Self.runHistoryPageSize)
+            runHistory = response.runs ?? []
+            runHistoryTotal = response.total
+        } catch {
+            historyErrorMessage = error.localizedDescription
+        }
+    }
+
+    /// Appends the next page of runs; `true` when a request was made.
+    func loadMoreRunHistory() async -> Bool {
+        guard let jobID = job.jobId else { return false }
+
+        let nextOffset = runHistory.count
+        guard canLoadMoreRunHistory, nextOffset > 0 else { return false }
+
+        isLoadingHistory = true
+        defer { isLoadingHistory = false }
+
+        do {
+            let response = try await client.cronRunHistory(jobID: jobID, offset: nextOffset, limit: Self.runHistoryPageSize)
+            runHistory.append(contentsOf: response.runs ?? [])
+            runHistory = deduplicatedRunHistory()
+            runHistoryTotal = response.total
+            return true
+        } catch {
+            historyErrorMessage = error.localizedDescription
+            return false
+        }
+    }
+
+    var canLoadMoreRunHistory: Bool {
+        guard let total = runHistoryTotal else { return false }
+        return runHistory.count < total
+    }
+
+    /// Server returns runs newest-first; dedupe defensively by filename so a
+    /// page boundary can never render a row twice.
+    private func deduplicatedRunHistory() -> [CronRunEntry] {
+        var seen = Set<String>()
+        return runHistory.filter { entry in
+            let key = entry.filename ?? entry.id
+            return seen.insert(key).inserted
+        }
+    }
+
+    /// Loads the full content of one past run for the detail sheet.
+    func loadRunDetail(filename: String) async {
+        guard let jobID = job.jobId, !filename.isEmpty else {
+            runDetailErrorMessage = String(localized: "Missing run identifier.")
+            return
+        }
+
+        isLoadingRunDetail = true
+        loadedRunDetail = nil
+        runDetailErrorMessage = nil
+        defer { isLoadingRunDetail = false }
+
+        do {
+            loadedRunDetail = try await client.cronRunDetail(jobID: jobID, filename: filename)
+        } catch {
+            runDetailErrorMessage = error.localizedDescription
+        }
+    }
+
+    func clearRunDetail() {
+        loadedRunDetail = nil
+        runDetailErrorMessage = nil
     }
 
     func clearActionError() {

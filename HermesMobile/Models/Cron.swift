@@ -240,6 +240,117 @@ struct CronOutputItem: Decodable, Equatable, Identifiable {
     }
 }
 
+/// One past run of a cron job from `/api/crons/history` (metadata only — the
+/// server lists run files without content; full content comes from `/api/crons/run`).
+struct CronRunEntry: Decodable, Equatable, Identifiable {
+    var id: String { filename ?? UUID().uuidString }
+
+    let filename: String?
+    let size: Int?
+    let modified: CronDateValue?
+    let usage: CronRunUsage?
+
+    enum CodingKeys: String, CodingKey {
+        case filename
+        case size
+        case modified
+        case usage
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        filename = container.decodeLossyStringIfPresent(forKey: .filename)
+        size = ((try? container.decodeFlexibleDoubleIfPresent(forKey: .size)) ?? nil).map(Int.init)
+        modified = (try? container.decodeIfPresent(CronDateValue.self, forKey: .modified)) ?? nil
+        usage = (try? container.decodeIfPresent(CronRunUsage.self, forKey: .usage)) ?? nil
+    }
+}
+
+/// Token/cost metadata the server parses out of a cron run's output header.
+/// Every field is optional: the server only emits what it can find.
+struct CronRunUsage: Decodable, Equatable {
+    let model: String?
+    let provider: String?
+    let estimatedCostUsd: Double?
+    let durationSeconds: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case model
+        case provider
+        case estimatedCostUsd
+        case durationSeconds
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        model = container.decodeLossyStringIfPresent(forKey: .model)
+        provider = container.decodeLossyStringIfPresent(forKey: .provider)
+        estimatedCostUsd = (try? container.decodeFlexibleDoubleIfPresent(forKey: .estimatedCostUsd)) ?? nil
+        durationSeconds = (try? container.decodeFlexibleDoubleIfPresent(forKey: .durationSeconds)) ?? nil
+    }
+}
+
+struct CronRunHistoryResponse: Decodable, Equatable {
+    let jobId: String?
+    let runs: [CronRunEntry]?
+    let total: Int?
+    let offset: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case jobId
+        case runs
+        case total
+        case offset
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        jobId = try container.decodeIfPresent(String.self, forKey: .jobId)
+        runs = (try? container.decodeIfPresent([CronRunEntry].self, forKey: .runs)) ?? nil
+        total = ((try? container.decodeFlexibleDoubleIfPresent(forKey: .total)) ?? nil).map(Int.init)
+        offset = ((try? container.decodeFlexibleDoubleIfPresent(forKey: .offset)) ?? nil).map(Int.init)
+    }
+}
+
+struct CronRunDetailResponse: Decodable, Equatable {
+    let jobId: String?
+    let filename: String?
+    let content: String?
+    let snippet: String?
+    let usage: CronRunUsage?
+
+    enum CodingKeys: String, CodingKey {
+        case jobId
+        case filename
+        case content
+        case snippet
+        case usage
+    }
+
+    init(
+        jobId: String?,
+        filename: String?,
+        content: String?,
+        snippet: String?,
+        usage: CronRunUsage?
+    ) {
+        self.jobId = jobId
+        self.filename = filename
+        self.content = content
+        self.snippet = snippet
+        self.usage = usage
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        jobId = try container.decodeIfPresent(String.self, forKey: .jobId)
+        filename = try container.decodeIfPresent(String.self, forKey: .filename)
+        content = try container.decodeIfPresent(String.self, forKey: .content)
+        snippet = try container.decodeIfPresent(String.self, forKey: .snippet)
+        usage = (try? container.decodeIfPresent(CronRunUsage.self, forKey: .usage)) ?? nil
+    }
+}
+
 struct CronDeliveryOptionsResponse: Decodable, Equatable {
     let platforms: [CronDeliveryOption]?
 

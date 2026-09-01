@@ -96,6 +96,8 @@ enum Endpoint {
     case cronResume
     case cronStatus(jobID: String?)
     case cronOutput(jobID: String, limit: Int?)
+    case cronRunHistory(jobID: String, offset: Int, limit: Int)
+    case cronRunDetail(jobID: String, filename: String)
     case cronDeliveryOptions
     case kanbanConfig
     case kanbanBoards
@@ -317,6 +319,10 @@ enum Endpoint {
             return "/api/crons/status"
         case .cronOutput:
             return "/api/crons/output"
+        case .cronRunHistory:
+            return "/api/crons/history"
+        case .cronRunDetail:
+            return "/api/crons/run"
         case .cronDeliveryOptions:
             return "/api/crons/delivery-options"
         case .kanbanConfig:
@@ -483,6 +489,17 @@ enum Endpoint {
                 items.append(URLQueryItem(name: "limit", value: "\(limit)"))
             }
             return items
+        case let .cronRunHistory(jobID, offset, limit):
+            return [
+                URLQueryItem(name: "job_id", value: jobID),
+                URLQueryItem(name: "offset", value: "\(offset)"),
+                URLQueryItem(name: "limit", value: "\(limit)"),
+            ]
+        case let .cronRunDetail(jobID, filename):
+            return [
+                URLQueryItem(name: "job_id", value: jobID),
+                URLQueryItem(name: "filename", value: filename),
+            ]
         case let .kanbanBoard(request):
             return request.queryItems
         case let .kanbanDispatch(request):

@@ -106,6 +106,16 @@ extension APIClient {
     func cronOutput(jobID: String, limit: Int? = 5) async throws -> CronOutputResponse {
         try await send(endpoint: .cronOutput(jobID: jobID, limit: limit), method: "GET")
     }
+
+    /// Past runs of a job (metadata only), from `/api/crons/history`.
+    func cronRunHistory(jobID: String, offset: Int = 0, limit: Int = 50) async throws -> CronRunHistoryResponse {
+        try await send(endpoint: .cronRunHistory(jobID: jobID, offset: offset, limit: limit), method: "GET")
+    }
+
+    /// Full content of one past run, from `/api/crons/run`.
+    func cronRunDetail(jobID: String, filename: String) async throws -> CronRunDetailResponse {
+        try await send(endpoint: .cronRunDetail(jobID: jobID, filename: filename), method: "GET")
+    }
 }
 
 private struct CronCreateRequest: Encodable {

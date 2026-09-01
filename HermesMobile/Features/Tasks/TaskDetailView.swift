@@ -8,6 +8,7 @@ struct TaskDetailView: View {
     @State private var viewModel: TaskDetailViewModel
     @State private var isPresentingEditTask = false
     @State private var isConfirmingDelete = false
+    @State private var selectedRun: CronRunEntry?
     @Environment(\.dismiss) private var dismiss
 
     init(
@@ -29,6 +30,7 @@ struct TaskDetailView: View {
                 headerSection
                 actionStatusSection
                 metadataSection
+                runHistorySection
 
                 if viewModel.isLoading && viewModel.outputs.isEmpty {
                     ProgressView("Loading output...")
@@ -123,6 +125,22 @@ struct TaskDetailView: View {
                 return didUpdate
             }
         }
+        .sheet(item: $selectedRun, onDismiss: { viewModel.clearRunDetail() }) { run in
+            CronRunDetailSheet(
+                run: run,
+                isLoading: viewModel.isLoadingRunDetail,
+                detail: viewModel.loadedRunDetail,
+                errorMessage: viewModel.runDetailErrorMessage,
+                onRetry: {
+                    Task {
+                        await viewModel.loadRunDetail(filename: run.filename ?? "")
+                    }
+                }
+            )
+            .task(id: run.id) {
+                await viewModel.loadRunDetail(filename: run.filename ?? "")
+            }
+        }
         .alert("Delete Task?", isPresented: $isConfirmingDelete) {
             Button("Delete", role: .destructive) {
                 Task { await deleteTask() }
@@ -133,6 +151,7 @@ struct TaskDetailView: View {
         }
         .task {
             await loadOutput()
+            await loadRunHistory()
         }
     }
 
@@ -233,6 +252,73 @@ struct TaskDetailView: View {
             }
         }
         .font(.footnote)
+    }
+
+    @ViewBuilder
+    private var runHistorySection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Run History")
+                    .font(.headline)
+                Spacer()
+                if let total = viewModel.runHistoryTotal {
+                    Text("\(total) total")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            if viewModel.isLoadingHistory && viewModel.runHistory.isEmpty {
+                ProgressView()
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 12)
+            } else if let historyError = viewModel.historyErrorMessage, viewModel.runHistory.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(historyError)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                    Button("Try Again") {
+                        Task { await loadRunHistory() }
+                    }
+                    .font(.footnote)
+                }
+            } else if viewModel.runHistory.isEmpty {
+                Text("No Past Runs")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(viewModel.runHistory) { run in
+                    Button {
+                        selectedRun = run
+                    } label: {
+                        CronRunHistoryRow(run: run)
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                if viewModel.canLoadMoreRunHistory {
+                    Button {
+                        Task { _ = await viewModel.loadMoreRunHistory() }
+                    } label: {
+                        HStack(spacing: 8) {
+                            if viewModel.isLoadingHistory {
+                                ProgressView()
+                            }
+                            Text("Load More")
+                        }
+                        .font(.footnote.weight(.medium))
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 6)
+                    }
+                    .buttonStyle(.borderless)
+                    .disabled(viewModel.isLoadingHistory)
+                }
+            }
+        }
+    }
+
+    private func loadRunHistory() async {
+        await viewModel.loadRunHistory()
     }
 
     @ViewBuilder
@@ -350,5 +436,124 @@ struct TaskDetailView: View {
         }
 
         onMutation(mutation)
+    }
+}
+
+/// One row in the Run History list: filename, date, size, and usage chips.
+struct CronRunHistoryRow: View {
+    let run: CronRunEntry
+
+    private static let byteFormatter: ByteCountFormatter = {
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .file
+        return formatter
+    }()
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(run.filename ?? String(localized: "Untitled"))
+                .font(.subheadline.weight(.semibold))
+                .lineLimit(1)
+                .truncationMode(.middle)
+
+            HStack(spacing: 6) {
+                if let date = run.modified?.date {
+                    Text(date, style: .date)
+                    Text(date, style: .time)
+                }
+
+                if let size = run.size {
+                    Text(Self.byteFormatter.string(fromByteCount: Int64(size)))
+                }
+
+                if let usage = run.usage {
+                    if !usage.chipText.isEmpty {
+                        Text(usage.chipText)
+                    }
+                }
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 6)
+        .contentShape(Rectangle())
+    }
+}
+
+extension CronRunUsage {
+    /// Compact one-line summary for the history row chips ("model · 2.3s · $0.0123").
+    var chipText: String {
+        var parts: [String] = []
+        if let durationSeconds, durationSeconds > 0 {
+            if durationSeconds < 60 {
+                parts.append(String(format: "%.1fs", durationSeconds))
+            } else {
+                parts.append(String(format: "%.1fm", durationSeconds / 60))
+            }
+        }
+        if let estimatedCostUsd {
+            parts.append(String(format: "$%.4f", estimatedCostUsd))
+        }
+        return parts.joined(separator: " · ")
+    }
+}
+
+/// Tap-through from a history row: full output of one past run.
+struct CronRunDetailSheet: View {
+    let run: CronRunEntry
+    let isLoading: Bool
+    let detail: CronRunDetailResponse?
+    let errorMessage: String?
+    let onRetry: () -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if isLoading {
+                    ProgressView(String(localized: "Loading run..."))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if let errorMessage, detail == nil {
+                    ContentUnavailableView {
+                        Label("Could Not Load Run", systemImage: "exclamationmark.triangle")
+                    } description: {
+                        Text(errorMessage)
+                    } actions: {
+                        Button("Try Again") {
+                            onRetry()
+                        }
+                    }
+                } else if let detail {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 12) {
+                            if let content = detail.content, !content.isEmpty {
+                                Text(content)
+                                    .font(.system(.body, design: .monospaced))
+                                    .textSelection(.enabled)
+                                    .padding(12)
+                                    .background(Color(.secondarySystemBackground))
+                                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            } else {
+                                Text("Empty output")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .padding()
+                    }
+                }
+            }
+            .navigationTitle(Text(run.filename ?? String(localized: "Untitled")))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
     }
 }
