@@ -397,4 +397,92 @@ final class APIClientCronEndpointTests: APIClientTestCase {
         let response = try await client.cronOutput(jobID: "job456", limit: nil)
         XCTAssertEqual(response.outputs?.count, 0)
     }
+
+    func testCronRecentBuildsExpectedPathAndDecodesCompletions() async throws {
+        let client = makeClient { request in
+            XCTAssertEqual(request.url?.path, "/api/crons/recent")
+            XCTAssertEqual(request.httpMethod, "GET")
+            let components = URLComponents(url: try XCTUnwrap(request.url), resolvingAgainstBaseURL: false)
+            let query = Dictionary(uniqueKeysWithValues: (components?.queryItems ?? []).map { ($0.name, $0.value) })
+            XCTAssertEqual(query["since"], "1788300000")
+
+            return apiTestJSONResponse("""
+            {
+              "completions": [
+                {
+                  "job_id": "job123",
+                  "name": "Morning digest",
+                  "status": "ok",
+                  "completed_at": 1788301200.5,
+                  "toast_notifications": true,
+                  "session_id": "session-abc",
+                  "message_count": 14,
+                  "ignored_new_field": {"nested": 1}
+                },
+                {
+                  "job_id": "job456",
+                  "name": "Nightly sweep",
+                  "status": "error",
+                  "completed_at": 1788290000
+                }
+              ],
+              "since": 1788300000
+            }
+            """, for: request)
+        }
+
+        let response = try await client.cronRecent(since: 1_788_300_000)
+        let first = try XCTUnwrap(response.completions?.first)
+        let second = try XCTUnwrap(response.completions?.last)
+
+        XCTAssertEqual(first.jobId, "job123")
+        XCTAssertEqual(first.name, "Morning digest")
+        XCTAssertFalse(first.statusIsFailure)
+        let completedAt = try XCTUnwrap(first.completedAt)
+        XCTAssertEqual(completedAt.date.timeIntervalSince1970, 1_788_301_200.5, accuracy: 0.1)
+        XCTAssertEqual(first.sessionId, "session-abc")
+        XCTAssertEqual(first.messageCount, 14)
+
+        XCTAssertEqual(second.jobId, "job456")
+        XCTAssertTrue(second.statusIsFailure, "error status must surface as failure.")
+        XCTAssertNil(second.sessionId)
+        XCTAssertNil(second.messageCount)
+        XCTAssertEqual(response.since ?? 0, 1_788_300_000, accuracy: 0.1)
+    }
+
+    func testCronRecentDecodesTolerantlyWhenFieldsMissing() async throws {
+        let client = makeClient { request in
+            XCTAssertEqual(request.url?.path, "/api/crons/recent")
+            XCTAssertNil(request.url?.query)
+
+            return apiTestJSONResponse("""
+            {
+              "completions": [
+                {
+                  "job_id": null,
+                  "name": null,
+                  "status": "delivery_failed",
+                  "completed_at": null,
+                  "message_count": "7"
+                },
+                {}
+              ],
+              "since": null
+            }
+            """, for: request)
+        }
+
+        let response = try await client.cronRecent()
+        let first = try XCTUnwrap(response.completions?.first)
+
+        XCTAssertTrue(first.statusIsFailure, "delivery_failed status must surface as failure.")
+        XCTAssertNil(first.jobId)
+        XCTAssertNil(first.completedAt)
+        XCTAssertEqual(first.messageCount, 7, "Numeric fields may arrive as strings.")
+
+        let second = try XCTUnwrap(response.completions?.last)
+        XCTAssertNil(second.name)
+        XCTAssertNil(second.statusIsFailure)
+        XCTAssertNil(response.since)
+    }
 }

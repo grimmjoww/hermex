@@ -14,6 +14,9 @@ final class TasksViewModel {
     /// Server-provided deliver targets; `nil` while unknown or when the
     /// endpoint is unavailable (the editor then falls back to free text).
     private(set) var deliveryOptions: [CronDeliveryOption]?
+    /// Cross-task completions feed from `/api/crons/recent`, newest first.
+    private(set) var recentRuns: [CronRecentRun] = []
+    private(set) var recentRunsErrorMessage: String?
     private(set) var isLoading = false
     private(set) var isMutating = false
     private(set) var errorMessage: String?
@@ -38,15 +41,78 @@ final class TasksViewModel {
             // Optional endpoint: failure must not break the task list, and a
             // nil result keeps the editor's free-text deliver fallback.
             async let deliveryOptionsResponse = try? client.cronDeliveryOptions()
+            // Optional endpoint: the recent-runs feed is an enhancement, a
+            // failure leaves the section quietly empty.
+            async let recentRunsResponse = client.cronRecent()
 
             let (jobsResult, statusResult) = try await (jobsResponse, statusResponse)
             runningJobs = statusResult.runningJobs ?? [:]
             jobs = (jobsResult.jobs ?? []).sorted(by: sortJobs)
             deliveryOptions = await deliveryOptionsResponse?.platforms
+
+            let recentResult: Result<CronRecentRunsResponse, Error>
+            do {
+                recentResult = .success(try await recentRunsResponse)
+            } catch {
+                recentResult = .failure(error)
+            }
+
+            switch recentResult {
+            case .success(let response):
+                recentRuns = Self.filteredRecentRuns(
+                    response.completions ?? [],
+                    visibleJobIDs: Set(jobs.compactMap(\.jobId))
+                )
+                recentRunsErrorMessage = nil
+            case .failure(let error):
+                recentRunsErrorMessage = error.localizedDescription
+            }
         } catch {
             lastError = error
             errorMessage = error.localizedDescription
         }
+    }
+
+    /// Refreshes only the recent-runs feed, keeping completions for tasks
+    /// present in `visibleJobs` (by job id). Completions for tasks the user
+    /// has filtered out — or deleted — are omitted so the feed never points
+    /// at something the list does not show.
+    func refreshRecentRuns(keeping visibleJobs: [String: CronJob]) async {
+        do {
+            let response = try await client.cronRecent()
+            recentRuns = Self.filteredRecentRuns(
+                response.completions ?? [],
+                visibleJobIDs: Set(visibleJobs.keys)
+            )
+            recentRunsErrorMessage = nil
+        } catch {
+            recentRunsErrorMessage = error.localizedDescription
+        }
+    }
+
+    /// Filters a completions feed down to visible tasks and sorts newest-first
+    /// (dateless rows sink to the end, name-ordered).
+    private static func filteredRecentRuns(
+        _ runs: [CronRecentRun],
+        visibleJobIDs: Set<String>
+    ) -> [CronRecentRun] {
+        runs
+            .filter { run in
+                guard let jobId = run.jobId else { return false }
+                return visibleJobIDs.contains(jobId)
+            }
+            .sorted { left, right in
+                switch (left.completedAt?.date, right.completedAt?.date) {
+                case let (leftDate?, rightDate?):
+                    return leftDate > rightDate
+                case (.some, nil):
+                    return true
+                case (nil, .some):
+                    return false
+                case (nil, nil):
+                    return (left.name ?? "").localizedCaseInsensitiveCompare(right.name ?? "") == .orderedAscending
+                }
+            }
     }
 
     func runningElapsed(for job: CronJob) -> Double? {

@@ -106,6 +106,13 @@ extension APIClient {
     func cronOutput(jobID: String, limit: Int? = 5) async throws -> CronOutputResponse {
         try await send(endpoint: .cronOutput(jobID: jobID, limit: limit), method: "GET")
     }
+
+    /// Recently completed runs across all tasks, from `/api/crons/recent`.
+    /// Pass `since` (epoch seconds) to only receive completions after a point
+    /// in time; `nil` fetches the latest unfiltered.
+    func cronRecent(since: Double? = nil) async throws -> CronRecentRunsResponse {
+        try await send(endpoint: .cronRecent(since: since), method: "GET")
+    }
 }
 
 private struct CronCreateRequest: Encodable {

@@ -240,6 +240,64 @@ struct CronOutputItem: Decodable, Equatable, Identifiable {
     }
 }
 
+/// One recently completed run from `/api/crons/recent` — the cross-task
+/// "what ran lately" completions feed.
+struct CronRecentRun: Decodable, Equatable, Identifiable {
+    /// Stable identity captured once at decode, so repeated `id` access never
+    /// mints a new UUID (which would destroy SwiftUI row identity).
+    let id: String
+
+    let jobId: String?
+    let name: String?
+    let status: String?
+    let completedAt: CronDateValue?
+    let sessionId: String?
+    let messageCount: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case jobId
+        case name
+        case status
+        case completedAt
+        case sessionId
+        case messageCount
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        jobId = container.decodeLossyStringIfPresent(forKey: .jobId)
+        name = container.decodeLossyStringIfPresent(forKey: .name)
+        status = container.decodeLossyStringIfPresent(forKey: .status)
+        completedAt = (try? container.decodeIfPresent(CronDateValue.self, forKey: .completedAt)) ?? nil
+        sessionId = container.decodeLossyStringIfPresent(forKey: .sessionId)
+        messageCount = ((try? container.decodeFlexibleDoubleIfPresent(forKey: .messageCount)) ?? nil).map(Int.init)
+        id = jobId ?? "recent-\(UUID().uuidString)"
+    }
+
+    /// Server statuses come from the cron runner: `ok`, `error`, and
+    /// `delivery_failed`. Anything unrecognized is treated as success-ish
+    /// (not a failure) rather than alarming the user.
+    var statusIsFailure: Bool? {
+        status.map { $0 == "error" || $0 == "delivery_failed" }
+    }
+}
+
+struct CronRecentRunsResponse: Decodable, Equatable {
+    let completions: [CronRecentRun]?
+    let since: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case completions
+        case since
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        completions = (try? container.decodeIfPresent([CronRecentRun].self, forKey: .completions)) ?? nil
+        since = (try? container.decodeFlexibleDoubleIfPresent(forKey: .since)) ?? nil
+    }
+}
+
 struct CronDeliveryOptionsResponse: Decodable, Equatable {
     let platforms: [CronDeliveryOption]?
 

@@ -81,6 +81,8 @@ struct TasksView: View {
             }
         } else {
             List {
+                recentRunsSection
+
                 Section {
                     HStack {
                         Label("Running now", systemImage: "bolt.fill")
@@ -123,6 +125,82 @@ struct TasksView: View {
         if let lastError = viewModel.lastError {
             onAPIError(lastError)
         }
+    }
+
+    /// Cross-task completions feed. Empty when the server lacks the endpoint
+    /// or nothing ran recently; a failure shows a one-line note only.
+    @ViewBuilder
+    private var recentRunsSection: some View {
+        if !viewModel.recentRuns.isEmpty {
+            Section("Recent Runs") {
+                ForEach(viewModel.recentRuns) { run in
+                    if let jobId = run.jobId,
+                       let job = viewModel.jobs.first(where: { $0.jobId == jobId }) {
+                        NavigationLink {
+                            TaskDetailView(
+                                job: job,
+                                runningElapsed: viewModel.runningElapsed(for: job),
+                                server: server,
+                                onAPIError: onAPIError,
+                                onMutation: { mutation in
+                                    viewModel.apply(mutation)
+                                }
+                            )
+                        } label: {
+                            RecentRunRowView(run: run)
+                        }
+                    } else {
+                        RecentRunRowView(run: run)
+                    }
+                }
+            }
+        } else if let recentRunsError = viewModel.recentRunsErrorMessage, !viewModel.jobs.isEmpty {
+            Section {
+                Text(recentRunsError)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+}
+
+private struct RecentRunRowView: View {
+    let run: CronRecentRun
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text(run.name ?? String(localized: "Untitled"))
+                    .font(.subheadline.weight(.medium))
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+
+                Spacer(minLength: 8)
+
+                if let statusIsFailure = run.statusIsFailure {
+                    if statusIsFailure {
+                        Label("Failed", systemImage: "xmark.circle.fill")
+                            .labelStyle(.titleAndIcon)
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                    } else {
+                        Label("OK", systemImage: "checkmark.circle.fill")
+                            .labelStyle(.titleAndIcon)
+                            .font(.caption)
+                            .foregroundStyle(.green)
+                    }
+                }
+
+                if let completedAt = run.completedAt {
+                    Text(completedAt.date, format: .relative(presentation: .named))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            .accessibilityElement(children: .combine)
+        }
+        .contentShape(Rectangle())
     }
 }
 

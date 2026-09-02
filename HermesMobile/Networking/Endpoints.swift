@@ -96,6 +96,7 @@ enum Endpoint {
     case cronResume
     case cronStatus(jobID: String?)
     case cronOutput(jobID: String, limit: Int?)
+    case cronRecent(since: Double?)
     case cronDeliveryOptions
     case kanbanConfig
     case kanbanBoards
@@ -317,6 +318,8 @@ enum Endpoint {
             return "/api/crons/status"
         case .cronOutput:
             return "/api/crons/output"
+        case .cronRecent:
+            return "/api/crons/recent"
         case .cronDeliveryOptions:
             return "/api/crons/delivery-options"
         case .kanbanConfig:
@@ -483,6 +486,9 @@ enum Endpoint {
                 items.append(URLQueryItem(name: "limit", value: "\(limit)"))
             }
             return items
+        case let .cronRecent(since):
+            guard let since else { return [] }
+            return [URLQueryItem(name: "since", value: "\(since)")]
         case let .kanbanBoard(request):
             return request.queryItems
         case let .kanbanDispatch(request):
