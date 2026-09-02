@@ -63,6 +63,8 @@ struct ChatTranscriptView: View {
     let onDisclosureToggle: () -> Void
     /// Settled-turn folds derived by the owner; `.none` when folding is off.
     let turnFolds: TranscriptTurnFolds
+    /// Rows that close a settled turn and so carry the time + copy row.
+    let terminalReplyRenderIDs: Set<String>
     let expandedTurnKeys: Set<String>
     let onToggleTurnFold: (String) -> Void
     let onDismissKeyboard: () -> Void
@@ -251,6 +253,7 @@ struct ChatTranscriptView: View {
                     transcriptSpacing: transcriptSpacing,
                     showsThinkingAndToolCards: showsThinkingAndToolCards,
                     foldState: foldState,
+                    isTerminalReply: terminalReplyRenderIDs.contains(transcriptMessage.renderID),
                     onToggleTurnFold: onToggleTurnFold,
                     reasoningGroups: reasoningGroups,
                     toolCallGroups: completedToolCallGroupsForAnchor(transcriptMessage.anchorID),
@@ -505,6 +508,8 @@ private struct ChatTranscriptMessageBlock: View, Equatable {
     /// Nil outside a settled-turn fold. Otherwise says whether this row draws
     /// the fold row and which of its parts are hidden right now.
     let foldState: TranscriptTurnFoldRowState?
+    /// Whether this row is the reply that closes a settled turn.
+    let isTerminalReply: Bool
     let onToggleTurnFold: (String) -> Void
     let reasoningGroups: [ReasoningGroup]
     let toolCallGroups: [ToolCallGroup]
@@ -548,6 +553,7 @@ private struct ChatTranscriptMessageBlock: View, Equatable {
             lhs.transcriptSpacing == rhs.transcriptSpacing &&
             lhs.showsThinkingAndToolCards == rhs.showsThinkingAndToolCards &&
             lhs.foldState == rhs.foldState &&
+            lhs.isTerminalReply == rhs.isTerminalReply &&
             lhs.reasoningGroups == rhs.reasoningGroups &&
             lhs.toolCallGroups == rhs.toolCallGroups &&
             lhs.liveReasoningText == rhs.liveReasoningText &&
@@ -628,6 +634,7 @@ private struct ChatTranscriptMessageBlock: View, Equatable {
                     message: transcriptMessage.message,
                     visibleIndex: transcriptMessage.loadedIndex,
                     actionContext: actionContext(transcriptMessage.message, transcriptMessage.loadedIndex),
+                    isTerminalReply: isTerminalReply,
                     localAttachmentPreviews: localAttachmentPreviews,
                     listeningMessageID: listeningMessageID,
                     isViewingCachedData: isViewingCachedData,
@@ -715,9 +722,12 @@ private struct ChatTranscriptMessageBlock: View, Equatable {
 }
 
 private struct ChatTranscriptMessageRow: View {
+    @AppStorage(ChatTranscriptDisplaySettings.showsAssistantTurnTimestampsKey) private var showsTimestamps = ChatTranscriptDisplaySettings.defaultShowsTimestamps
+
     let message: ChatMessage
     let visibleIndex: Int
     let actionContext: MessageActionContext?
+    let isTerminalReply: Bool
     let localAttachmentPreviews: [String: Data]?
     let listeningMessageID: String?
     let isViewingCachedData: Bool
@@ -747,28 +757,58 @@ private struct ChatTranscriptMessageRow: View {
         // don't apply to system-emitted markers.
         if let markerKind = ChatMarkerMessageClassifier.classify(message) {
             MarkerMessageCardView(kind: markerKind, content: message.content)
-        } else if let actionContext {
-            bubble
-                .contextMenu {
-                    ChatMessageActionMenu(
-                        context: actionContext,
-                        listeningMessageID: listeningMessageID,
-                        isViewingCachedData: isViewingCachedData,
-                        hasActiveStream: hasActiveStream,
-                        isRegeneratingMessage: isRegeneratingMessage,
-                        isEditingMessage: isEditingMessage,
-                        isForkingMessage: isForkingMessage,
-                        onToggleListening: onToggleListening,
-                        onSelectText: onSelectText,
-                        onRegenerate: onRegenerate,
-                        onEdit: onEdit,
-                        onFork: onFork,
-                        onCopy: onCopy
+        } else {
+            VStack(alignment: isUserMessage ? .trailing : .leading, spacing: 4) {
+                if let actionContext {
+                    bubble
+                        .contextMenu {
+                            ChatMessageActionMenu(
+                                context: actionContext,
+                                listeningMessageID: listeningMessageID,
+                                isViewingCachedData: isViewingCachedData,
+                                hasActiveStream: hasActiveStream,
+                                isRegeneratingMessage: isRegeneratingMessage,
+                                isEditingMessage: isEditingMessage,
+                                isForkingMessage: isForkingMessage,
+                                onToggleListening: onToggleListening,
+                                onSelectText: onSelectText,
+                                onRegenerate: onRegenerate,
+                                onEdit: onEdit,
+                                onFork: onFork,
+                                onCopy: onCopy
+                            )
+                        }
+                } else {
+                    bubble
+                }
+
+                if showsMetaRow {
+                    ChatMessageMetaRow(
+                        isUserMessage: isUserMessage,
+                        timeText: metaTimeText,
+                        onCopy: actionContext.map { context -> () -> Void in
+                            { onCopy(context) }
+                        }
                     )
                 }
-        } else {
-            bubble
+            }
         }
+    }
+
+    private var isUserMessage: Bool {
+        message.role == "user"
+    }
+
+    /// Every user message carries the row; an assistant row only as the reply
+    /// that closes a settled turn, and never while it is still streaming.
+    private var showsMetaRow: Bool {
+        guard metaTimeText != nil || actionContext != nil else { return false }
+        return isUserMessage || (isTerminalReply && !isStreaming)
+    }
+
+    private var metaTimeText: String? {
+        guard showsTimestamps else { return nil }
+        return ChatMessageTimestampFormatter.shortTime(forUnixTimestamp: message.timestamp)
     }
 
     private var bubble: some View {

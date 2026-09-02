@@ -416,7 +416,6 @@ private struct ChatCodeBlock: View {
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage(ChatTranscriptDisplaySettings.wrapsCodeBlockLinesKey) private var wrapsCodeBlockLines = false
     @AppStorage(AppHaptics.isEnabledKey) private var isHapticsEnabled = true
-    @State private var didCopy = false
     @State private var highlightedCode: NSAttributedString?
 
     private let logger = Logger.hermesMarkdownRendering
@@ -437,23 +436,21 @@ private struct ChatCodeBlock: View {
                         .frame(width: 36, height: 36)
                         .contentTransition(.symbolEffect(.replace))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.chatTactile(.icon))
                 .foregroundStyle(SwiftUI.Color.primary)
                 .accessibilityLabel(wrapsCodeBlockLines ? "Disable code line wrapping" : "Enable code line wrapping")
 
-                Button {
+                ChatCopyButton(
+                    label: String(localized: "Copy code"),
+                    copiedLabel: String(localized: "Copied code"),
+                    size: 36,
+                    glyphSize: 18,
+                    glyphWeight: .semibold
+                ) {
                     UIPasteboard.general.string = content
-                    didCopy = true
                     ChatHaptics.copied(isEnabled: isHapticsEnabled)
-                } label: {
-                    Image(systemName: didCopy ? "checkmark" : "square.on.square")
-                        .font(.system(size: 18, weight: .semibold))
-                    .frame(width: 36, height: 36)
-                    .contentTransition(.symbolEffect(.replace))
                 }
-                .buttonStyle(.plain)
                 .foregroundStyle(SwiftUI.Color.primary)
-                .accessibilityLabel(didCopy ? "Copied code" : "Copy code")
             }
             .padding(.leading, 16)
             .padding(.trailing, 10)
@@ -474,9 +471,6 @@ private struct ChatCodeBlock: View {
         .overlay {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .stroke(SwiftUI.Color(.separator).opacity(0.35), lineWidth: 1)
-        }
-        .onChange(of: content) { _, _ in
-            didCopy = false
         }
         .task(id: highlightRequest) {
             await updateHighlightedCode(for: highlightRequest)

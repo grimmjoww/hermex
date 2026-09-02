@@ -10308,112 +10308,6 @@
         }
       }
     },
-    "Adds a small marker and the time above each response so back-to-back replies are easier to tell apart." : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "يضيف علامة صغيرة والوقت أعلى كل رد ليسهل التمييز بين الردود المتتالية."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Fügt über jeder Antwort eine kleine Markierung und die Uhrzeit hinzu, damit aufeinanderfolgende Antworten leichter auseinanderzuhalten sind."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Añade un marcador pequeño y la hora sobre cada respuesta para distinguir las réplicas consecutivas más fácilmente."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Affiche un indicateur et l'heure au-dessus de chaque réponse pour distinguer facilement les réponses successives."
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "מוסיף סימן קטן ואת השעה מעל כל תגובה כדי שיהיה קל יותר להבחין בין תשובות עוקבות."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Aggiunge un indicatore e l'orario sopra ogni risposta per distinguere facilmente le risposte consecutive."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "各応答の上に小さなマーカーと時刻を表示し、連続した返信を見分けやすくします。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "각 응답 위에 작은 표시와 시간을 추가해 연속된 답변을 더 쉽게 구분할 수 있어요."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Voegt een kleine markering en de tijd boven elk antwoord toe, zodat opeenvolgende antwoorden gemakkelijker te onderscheiden zijn."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Dodaje mały znacznik i godzinę nad każdą odpowiedzią, aby kolejne odpowiedzi były łatwiejsze do rozróżnienia."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Adiciona um pequeno marcador e o horário acima de cada resposta para facilitar a distinção entre respostas consecutivas."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Добавляет небольшой маркер и время над каждым ответом, чтобы было легче различать ответы, идущие подряд."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Art arda gelen yanıtların birbirinden daha kolay ayırt edilebilmesi için her yanıtın üstüne küçük bir işaret ve saat ekler."
-          }
-        },
-        "ur" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "ہر جواب کے اوپر ایک چھوٹا نشان اور وقت شامل کرتا ہے تاکہ یکے بعد دیگرے جوابات میں فرق کرنا آسان ہو۔"
-          }
-        },
-        "zh-HK" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "在每則回覆上方加入小標記和時間，方便區分連續的回覆。"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "在每条回复上方添加小标记和时间，便于区分连续的回复。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "在每則回覆上方加上小標記和時間，方便區分連續的回覆。"
-          }
-        }
-      }
-    },
     "Adds another Hermes server." : {
       "localizations" : {
         "ar" : {
@@ -117219,6 +117113,112 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "你已停止此回覆"
+          }
+        }
+      }
+    },
+    "Shows the time under your messages and under each finished response." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "يعرض الوقت أسفل رسائلك وأسفل كل رد مكتمل."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zeigt die Uhrzeit unter deinen Nachrichten und unter jeder fertigen Antwort."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Muestra la hora debajo de tus mensajes y de cada respuesta terminada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Affiche l’heure sous vos messages et sous chaque réponse terminée."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "מציג את השעה מתחת להודעות שלך ומתחת לכל תשובה שהושלמה."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mostra l’ora sotto i tuoi messaggi e sotto ogni risposta completata."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "メッセージと完了した各返答の下に時刻を表示します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "내 메시지와 완료된 각 응답 아래에 시간을 표시합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Toont de tijd onder je berichten en onder elk voltooid antwoord."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokazuje godzinę pod Twoimi wiadomościami i pod każdą zakończoną odpowiedzią."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mostra a hora abaixo das suas mensagens e de cada resposta concluída."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Показывает время под вашими сообщениями и под каждым завершённым ответом."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mesajlarının ve tamamlanan her yanıtın altında saati gösterir."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "آپ کے پیغامات اور ہر مکمل جواب کے نیچے وقت دکھاتا ہے۔"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "在你的訊息和每則已完成的回覆下方顯示時間。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "在你的消息和每条已完成的回复下方显示时间。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "在你的訊息和每則已完成的回覆下方顯示時間。"
           }
         }
       }

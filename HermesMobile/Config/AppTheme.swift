@@ -210,7 +210,11 @@ enum ChatTranscriptDisplaySettings {
     static let thinkingCardsStartExpandedKey = "chatTranscript.thinkingCardsStartExpanded"
     static let toolCardsStartExpandedKey = "chatTranscript.toolCardsStartExpanded"
     static let hidesAttachmentPathsKey = "chatTranscript.hidesAttachmentPaths"
+    /// Settings → Chat "Response Timestamps": the time under each user message
+    /// and each finished reply. The key name predates the move under the
+    /// message and stays so a stored choice keeps working.
     static let showsAssistantTurnTimestampsKey = "chatTranscript.showsAssistantTurnTimestamps"
+    static let defaultShowsTimestamps = true
     static let showsResponseSpeedKey = "chatTranscript.showsResponseSpeed"
     static let wrapsCodeBlockLinesKey = "chatTranscript.wrapsCodeBlockLines"
     /// Settings → Chat "Fold Finished Turns": settled turns collapse their
@@ -269,18 +273,19 @@ enum ChatTranscriptDisplaySettings {
             messageID == streamingAssistantMessageID
     }
 
-    /// Whether to draw the per-turn `glyph + timestamp` header above an assistant
-    /// turn. The header is a turn *separator*, not an identity, so it is limited
-    /// to real assistant turns that carry visible text — never user bubbles,
+    /// Whether to draw the `glyph + speed` header above an assistant reply. It
+    /// only exists to carry Response Speed, so it is limited to real assistant
+    /// turns with visible text and a measured speed — never user bubbles,
     /// system/marker cards, tool-call cards, or empty/tool-only assistant rows.
+    /// The reply's time lives under the message (`ChatMessageMetaRow`).
     static func showsAssistantTurnHeader(
         role: String?,
         hasTextContent: Bool,
-        isEnabled: Bool,
-        showsResponseSpeed: Bool = false,
-        hasResponseSpeed: Bool = false
+        showsResponseSpeed: Bool,
+        hasResponseSpeed: Bool
     ) -> Bool {
-        (isEnabled || (showsResponseSpeed && hasResponseSpeed)) &&
+        showsResponseSpeed &&
+            hasResponseSpeed &&
             role == "assistant" &&
             hasTextContent
     }

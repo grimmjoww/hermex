@@ -1228,6 +1228,7 @@ struct ChatView: View {
             onFollowEvent: handleFollowEvent,
             onDisclosureToggle: handleDisclosureToggle,
             turnFolds: turnFolds(reasoningGroups: reasoningGroups),
+            terminalReplyRenderIDs: terminalReplyRenderIDs,
             expandedTurnKeys: expandedTurnKeys,
             onToggleTurnFold: toggleTurnFold,
             onDismissKeyboard: dismissKeyboard,
@@ -1431,6 +1432,18 @@ struct ChatView: View {
             isStreamActive: viewModel.activeStreamID != nil,
             streamingAssistantMessageID: viewModel.streamingAssistantMessageID,
             latestRunOutcome: viewModel.latestRunOutcome
+        )
+    }
+
+    /// Rows that get the time + copy row as the reply closing a settled turn.
+    private var terminalReplyRenderIDs: Set<String> {
+        TranscriptMessageMetaPolicy.terminalReplyRenderIDs(
+            transcriptMessages: transcriptMessages,
+            messages: viewModel.messages,
+            messageOffset: viewModel.messagesOffset,
+            rendersBubble: shouldRenderMessageRow,
+            isStreamActive: viewModel.activeStreamID != nil,
+            streamingAssistantMessageID: viewModel.streamingAssistantMessageID
         )
     }
 

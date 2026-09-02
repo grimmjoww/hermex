@@ -5,7 +5,6 @@ struct MessageBubbleView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @AppStorage(ChatTranscriptDisplaySettings.hidesAttachmentPathsKey) private var hidesAttachmentPaths = true
-    @AppStorage(ChatTranscriptDisplaySettings.showsAssistantTurnTimestampsKey) private var showsAssistantTurnTimestamps = false
     @AppStorage(ChatTranscriptDisplaySettings.showsResponseSpeedKey) private var showsResponseSpeed = false
 
     let message: ChatMessage
@@ -117,20 +116,15 @@ struct MessageBubbleView: View {
 
     // MARK: - Assistant turn header (issue #258)
 
-    /// A compact, generic `glyph + time` marker drawn above each assistant text
-    /// turn so back-to-back responses are visually separable. Deliberately carries
-    /// no model/profile/agent identity — only the message's own timestamp, which
-    /// is the single per-message-accurate datum available.
+    /// A compact `glyph + speed` marker drawn above an assistant reply while
+    /// Response Speed is on. Deliberately carries no model/profile/agent
+    /// identity. The reply's time is not here: it sits under the message in
+    /// `ChatMessageMetaRow`, next to the copy button.
     private var assistantTurnHeader: some View {
         HStack(spacing: 5) {
             Image(systemName: "sparkle")
                 .foregroundStyle(Color.accentColor)
                 .accessibilityHidden(true)
-
-            if let time = assistantTurnTimeText {
-                Text(time)
-                    .foregroundStyle(.secondary)
-            }
 
             if let speed = assistantResponseSpeedText {
                 Text(speed)
@@ -146,7 +140,6 @@ struct MessageBubbleView: View {
         ChatTranscriptDisplaySettings.showsAssistantTurnHeader(
             role: message.role,
             hasTextContent: hasVisibleAssistantText,
-            isEnabled: showsAssistantTurnTimestamps,
             showsResponseSpeed: showsResponseSpeed,
             hasResponseSpeed: assistantResponseSpeedText != nil
         )
@@ -160,23 +153,16 @@ struct MessageBubbleView: View {
         return !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    private var assistantTurnTimeText: String? {
-        guard showsAssistantTurnTimestamps else { return nil }
-        return AssistantTurnTimestampFormatter.shortTime(forUnixTimestamp: message.timestamp)
-    }
-
     private var assistantResponseSpeedText: String? {
         guard showsResponseSpeed else { return nil }
         return ResponseSpeedFormatter.compactText(isStreaming ? liveTokensPerSecond : message.turnTps)
     }
 
     private var assistantTurnHeaderAccessibilityLabel: String {
-        let details = [
-            assistantTurnTimeText,
-            assistantResponseSpeedAccessibilityText
-        ].compactMap { $0 }
-        guard !details.isEmpty else { return String(localized: "Assistant") }
-        return String(localized: "Assistant, \(details.joined(separator: ", "))")
+        guard let speed = assistantResponseSpeedAccessibilityText else {
+            return String(localized: "Assistant")
+        }
+        return String(localized: "Assistant, \(speed)")
     }
 
     private var assistantResponseSpeedAccessibilityText: String? {
@@ -699,46 +685,6 @@ private actor AttachmentImageCache {
             cache[path] = image
         }
         return image
-    }
-}
-
-// MARK: - Assistant turn timestamp formatting
-
-/// Formats an assistant turn's unix `timestamp` as a short, locale-/24h-aware
-/// time (e.g. `2:14 PM` or `14:14`). Returns `nil` for a missing or non-finite
-/// timestamp so the per-turn header falls back to glyph-only.
-enum AssistantTurnTimestampFormatter {
-    private static let sharedFormatter: DateFormatter = makeFormatter(
-        locale: .autoupdatingCurrent,
-        timeZone: .autoupdatingCurrent
-    )
-
-    static func shortTime(forUnixTimestamp timestamp: Double?) -> String? {
-        format(timestamp, with: sharedFormatter)
-    }
-
-    /// Test seam: format against an explicit locale/time zone so 12h/24h
-    /// assertions stay deterministic regardless of host device settings.
-    static func shortTime(
-        forUnixTimestamp timestamp: Double?,
-        locale: Locale,
-        timeZone: TimeZone
-    ) -> String? {
-        format(timestamp, with: makeFormatter(locale: locale, timeZone: timeZone))
-    }
-
-    private static func makeFormatter(locale: Locale, timeZone: TimeZone) -> DateFormatter {
-        let formatter = DateFormatter()
-        formatter.locale = locale
-        formatter.timeZone = timeZone
-        formatter.dateStyle = .none
-        formatter.timeStyle = .short
-        return formatter
-    }
-
-    private static func format(_ timestamp: Double?, with formatter: DateFormatter) -> String? {
-        guard let timestamp, timestamp.isFinite else { return nil }
-        return formatter.string(from: Date(timeIntervalSince1970: timestamp))
     }
 }
 

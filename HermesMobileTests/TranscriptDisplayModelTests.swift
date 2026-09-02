@@ -394,33 +394,21 @@ final class ChatTranscriptDisplaySettingsTests: XCTestCase {
         )
     }
 
-    func testTimestampAndResponseSpeedTogglesAreIndependent() {
+    func testTimestampsDefaultOn() {
+        XCTAssertTrue(ChatTranscriptDisplaySettings.defaultShowsTimestamps)
+    }
+
+    func testAssistantTurnHeaderIsOnlyTheResponseSpeedMarker() {
+        XCTAssertTrue(ChatTranscriptDisplaySettings.showsAssistantTurnHeader(
+            role: "assistant",
+            hasTextContent: true,
+            showsResponseSpeed: true,
+            hasResponseSpeed: true
+        ))
         XCTAssertFalse(ChatTranscriptDisplaySettings.showsAssistantTurnHeader(
             role: "assistant",
             hasTextContent: true,
-            isEnabled: false,
             showsResponseSpeed: false,
-            hasResponseSpeed: true
-        ))
-        XCTAssertTrue(ChatTranscriptDisplaySettings.showsAssistantTurnHeader(
-            role: "assistant",
-            hasTextContent: true,
-            isEnabled: true,
-            showsResponseSpeed: false,
-            hasResponseSpeed: true
-        ))
-        XCTAssertTrue(ChatTranscriptDisplaySettings.showsAssistantTurnHeader(
-            role: "assistant",
-            hasTextContent: true,
-            isEnabled: false,
-            showsResponseSpeed: true,
-            hasResponseSpeed: true
-        ))
-        XCTAssertTrue(ChatTranscriptDisplaySettings.showsAssistantTurnHeader(
-            role: "assistant",
-            hasTextContent: true,
-            isEnabled: true,
-            showsResponseSpeed: true,
             hasResponseSpeed: true
         ))
     }
@@ -429,25 +417,8 @@ final class ChatTranscriptDisplaySettingsTests: XCTestCase {
         XCTAssertFalse(ChatTranscriptDisplaySettings.showsAssistantTurnHeader(
             role: "assistant",
             hasTextContent: true,
-            isEnabled: false,
             showsResponseSpeed: true,
             hasResponseSpeed: false
-        ))
-    }
-
-    func testAssistantTurnHeaderShowsForAssistantTextTurnWhenEnabled() {
-        XCTAssertTrue(ChatTranscriptDisplaySettings.showsAssistantTurnHeader(
-            role: "assistant",
-            hasTextContent: true,
-            isEnabled: true
-        ))
-    }
-
-    func testAssistantTurnHeaderHiddenWhenToggleOff() {
-        XCTAssertFalse(ChatTranscriptDisplaySettings.showsAssistantTurnHeader(
-            role: "assistant",
-            hasTextContent: true,
-            isEnabled: false
         ))
     }
 
@@ -455,7 +426,8 @@ final class ChatTranscriptDisplaySettingsTests: XCTestCase {
         XCTAssertFalse(ChatTranscriptDisplaySettings.showsAssistantTurnHeader(
             role: "assistant",
             hasTextContent: false,
-            isEnabled: true
+            showsResponseSpeed: true,
+            hasResponseSpeed: true
         ))
     }
 
@@ -465,7 +437,8 @@ final class ChatTranscriptDisplaySettingsTests: XCTestCase {
                 ChatTranscriptDisplaySettings.showsAssistantTurnHeader(
                     role: role,
                     hasTextContent: true,
-                    isEnabled: true
+                    showsResponseSpeed: true,
+                    hasResponseSpeed: true
                 ),
                 "Header must not render for role \(role)"
             )
@@ -474,7 +447,8 @@ final class ChatTranscriptDisplaySettingsTests: XCTestCase {
         XCTAssertFalse(ChatTranscriptDisplaySettings.showsAssistantTurnHeader(
             role: nil,
             hasTextContent: true,
-            isEnabled: true
+            showsResponseSpeed: true,
+            hasResponseSpeed: true
         ))
     }
 
@@ -586,13 +560,13 @@ final class ChatActiveRunStatusPolicyTests: XCTestCase {
     }
 }
 
-final class AssistantTurnTimestampFormatterTests: XCTestCase {
+final class ChatMessageTimestampFormatterTests: XCTestCase {
     // 2021-01-01 14:14:00 UTC
     private let fixedTimestamp: Double = 1_609_510_440
     private let utc = TimeZone(identifier: "UTC")!
 
     func testFormatsTwelveHourLocaleAsShortTime() {
-        let result = AssistantTurnTimestampFormatter.shortTime(
+        let result = ChatMessageTimestampFormatter.shortTime(
             forUnixTimestamp: fixedTimestamp,
             locale: Locale(identifier: "en_US"),
             timeZone: utc
@@ -604,7 +578,7 @@ final class AssistantTurnTimestampFormatterTests: XCTestCase {
     }
 
     func testFormatsTwentyFourHourLocaleAsShortTime() {
-        let result = AssistantTurnTimestampFormatter.shortTime(
+        let result = ChatMessageTimestampFormatter.shortTime(
             forUnixTimestamp: fixedTimestamp,
             locale: Locale(identifier: "en_GB"),
             timeZone: utc
@@ -616,8 +590,8 @@ final class AssistantTurnTimestampFormatterTests: XCTestCase {
     }
 
     func testReturnsNilForNilTimestamp() {
-        XCTAssertNil(AssistantTurnTimestampFormatter.shortTime(forUnixTimestamp: nil))
-        XCTAssertNil(AssistantTurnTimestampFormatter.shortTime(
+        XCTAssertNil(ChatMessageTimestampFormatter.shortTime(forUnixTimestamp: nil))
+        XCTAssertNil(ChatMessageTimestampFormatter.shortTime(
             forUnixTimestamp: nil,
             locale: Locale(identifier: "en_US"),
             timeZone: utc
@@ -625,12 +599,12 @@ final class AssistantTurnTimestampFormatterTests: XCTestCase {
     }
 
     func testReturnsNilForNonFiniteTimestamp() {
-        XCTAssertNil(AssistantTurnTimestampFormatter.shortTime(forUnixTimestamp: .nan))
-        XCTAssertNil(AssistantTurnTimestampFormatter.shortTime(forUnixTimestamp: .infinity))
+        XCTAssertNil(ChatMessageTimestampFormatter.shortTime(forUnixTimestamp: .nan))
+        XCTAssertNil(ChatMessageTimestampFormatter.shortTime(forUnixTimestamp: .infinity))
     }
 
     func testCurrentLocaleOverloadFormatsFiniteTimestamp() {
-        XCTAssertNotNil(AssistantTurnTimestampFormatter.shortTime(forUnixTimestamp: fixedTimestamp))
+        XCTAssertNotNil(ChatMessageTimestampFormatter.shortTime(forUnixTimestamp: fixedTimestamp))
     }
 }
 
