@@ -59,12 +59,22 @@ final class TasksViewModel {
 
             switch recentResult {
             case .success(let response):
-                recentRuns = Self.filteredRecentRuns(
-                    response.completions ?? [],
-                    visibleJobIDs: Set(jobs.compactMap(\.jobId))
-                )
+                recentRuns = Self.sortedRecentRuns(response.completions ?? [])
                 recentRunsErrorMessage = nil
             case .failure(let error):
+                // An older server without the feed just means the section
+                // stays empty — not an error worth a banner. Cancellation
+                // (view torn down mid-load) is silent too.
+                if error is CancellationError {
+                    break
+                }
+                if Self.isMissingEndpoint(error) {
+                    recentRuns = []
+                    recentRunsErrorMessage = nil
+                    break
+                }
+                // Keep any previously loaded rows visible; a note alone
+                // tells the user the feed is stale.
                 recentRunsErrorMessage = error.localizedDescription
             }
         } catch {
@@ -73,46 +83,49 @@ final class TasksViewModel {
         }
     }
 
-    /// Refreshes only the recent-runs feed, keeping completions for tasks
-    /// present in `visibleJobs` (by job id). Completions for tasks the user
-    /// has filtered out — or deleted — are omitted so the feed never points
-    /// at something the list does not show.
-    func refreshRecentRuns(keeping visibleJobs: [String: CronJob]) async {
+    /// Refreshes only the recent-runs feed.
+    func refreshRecentRuns() async {
         do {
             let response = try await client.cronRecent()
-            recentRuns = Self.filteredRecentRuns(
-                response.completions ?? [],
-                visibleJobIDs: Set(visibleJobs.keys)
-            )
+            recentRuns = Self.sortedRecentRuns(response.completions ?? [])
             recentRunsErrorMessage = nil
+        } catch is CancellationError {
+            return
         } catch {
+            // An older server without the feed just means the section stays
+            // empty — that is not an error worth a banner.
+            guard !Self.isMissingEndpoint(error) else {
+                recentRunsErrorMessage = nil
+                return
+            }
             recentRunsErrorMessage = error.localizedDescription
         }
     }
 
-    /// Filters a completions feed down to visible tasks and sorts newest-first
-    /// (dateless rows sink to the end, name-ordered).
-    private static func filteredRecentRuns(
-        _ runs: [CronRecentRun],
-        visibleJobIDs: Set<String>
-    ) -> [CronRecentRun] {
-        runs
-            .filter { run in
-                guard let jobId = run.jobId else { return false }
-                return visibleJobIDs.contains(jobId)
+    /// Sorts a completions feed newest-first (dateless rows sink to the end,
+    /// name-ordered). Rows for tasks the list no longer shows are kept — the
+    /// view renders them display-only instead of hiding real history.
+    private static func sortedRecentRuns(_ runs: [CronRecentRun]) -> [CronRecentRun] {
+        runs.sorted { left, right in
+            switch (left.completedAt?.date, right.completedAt?.date) {
+            case let (leftDate?, rightDate?):
+                return leftDate > rightDate
+            case (.some, nil):
+                return true
+            case (nil, .some):
+                return false
+            case (nil, nil):
+                return (left.name ?? "").localizedCaseInsensitiveCompare(right.name ?? "") == .orderedAscending
             }
-            .sorted { left, right in
-                switch (left.completedAt?.date, right.completedAt?.date) {
-                case let (leftDate?, rightDate?):
-                    return leftDate > rightDate
-                case (.some, nil):
-                    return true
-                case (nil, .some):
-                    return false
-                case (nil, nil):
-                    return (left.name ?? "").localizedCaseInsensitiveCompare(right.name ?? "") == .orderedAscending
-                }
-            }
+        }
+    }
+
+    /// True when the server predates the recent-runs endpoint (or answers
+    /// with the not-found shape), meaning the optional section should simply
+    /// stay hidden.
+    static func isMissingEndpoint(_ error: Error) -> Bool {
+        guard case APIError.http(let statusCode, _) = error else { return false }
+        return statusCode == 404 || statusCode == 405 || statusCode == 501
     }
 
     func runningElapsed(for job: CronJob) -> Double? {

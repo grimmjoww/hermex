@@ -488,7 +488,7 @@ enum Endpoint {
             return items
         case let .cronRecent(since):
             guard let since else { return [] }
-            return [URLQueryItem(name: "since", value: "\(since)")]
+            return [URLQueryItem(name: "since", value: String(Int(since)))]
         case let .kanbanBoard(request):
             return request.queryItems
         case let .kanbanDispatch(request):

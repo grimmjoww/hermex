@@ -127,8 +127,9 @@ struct TasksView: View {
         }
     }
 
-    /// Cross-task completions feed. Empty when the server lacks the endpoint
-    /// or nothing ran recently; a failure shows a one-line note only.
+    /// Cross-task completions feed. Hidden when the server lacks the endpoint
+    /// or nothing ran recently; a failure shows a one-line note (rows stay
+    /// visible but the note says the feed could not refresh).
     @ViewBuilder
     private var recentRunsSection: some View {
         if !viewModel.recentRuns.isEmpty {
@@ -152,6 +153,12 @@ struct TasksView: View {
                     } else {
                         RecentRunRowView(run: run)
                     }
+                }
+
+                if let recentRunsError = viewModel.recentRunsErrorMessage {
+                    Text(recentRunsError)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                 }
             }
         } else if let recentRunsError = viewModel.recentRunsErrorMessage, !viewModel.jobs.isEmpty {

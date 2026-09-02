@@ -243,8 +243,10 @@ struct CronOutputItem: Decodable, Equatable, Identifiable {
 /// One recently completed run from `/api/crons/recent` — the cross-task
 /// "what ran lately" completions feed.
 struct CronRecentRun: Decodable, Equatable, Identifiable {
-    /// Stable identity captured once at decode, so repeated `id` access never
-    /// mints a new UUID (which would destroy SwiftUI row identity).
+    /// Stable, unique identity captured once at decode. A recurring task's
+    /// completions share one `job_id`, so identity combines the job with its
+    /// completion time; rows without either fall back to a UUID minted here
+    /// (repeated `id` access never generates a new one).
     let id: String
 
     let jobId: String?
@@ -271,7 +273,13 @@ struct CronRecentRun: Decodable, Equatable, Identifiable {
         completedAt = (try? container.decodeIfPresent(CronDateValue.self, forKey: .completedAt)) ?? nil
         sessionId = container.decodeLossyStringIfPresent(forKey: .sessionId)
         messageCount = ((try? container.decodeFlexibleDoubleIfPresent(forKey: .messageCount)) ?? nil).map(Int.init)
-        id = jobId ?? "recent-\(UUID().uuidString)"
+
+        let jobIdPart = jobId ?? "unknown"
+        if let timestamp = completedAt?.date.timeIntervalSince1970 {
+            id = "\(jobIdPart)-\(timestamp)"
+        } else {
+            id = "\(jobIdPart)-recent-\(UUID().uuidString)"
+        }
     }
 
     /// Server statuses come from the cron runner: `ok`, `error`, and

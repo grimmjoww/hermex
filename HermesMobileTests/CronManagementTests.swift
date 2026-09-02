@@ -434,30 +434,53 @@ final class CronManagementViewModelTests: XCTestCase {
     }
 
     @MainActor
-    func testTasksViewModelRecentRunsOmitsJobsHiddenByFilters() async throws {
+    func testTasksViewModelRecentRunsMissingEndpointStaysQuiet() async throws {
         let client = makeClient { request in
             switch request.url?.path {
             case "/api/crons/recent":
-                return apiTestJSONResponse(
-                    """
-                    {"completions": [
-                      {"job_id": "job-live", "name": "Live", "status": "ok", "completed_at": 1788301200},
-                      {"job_id": "job-gone", "name": "Gone", "status": "ok", "completed_at": 1788300000}
-                    ], "since": 0}
-                    """,
-                    for: request
-                )
+                let response = HTTPURLResponse(
+                    url: request.url!,
+                    statusCode: 404,
+                    httpVersion: nil,
+                    headerFields: ["Content-Type": "application/json"]
+                )!
+                return (response, Data(#"{"error": "not found"}"#.utf8))
             default:
                 return apiTestJSONResponse("{}", for: request)
             }
         }
         let viewModel = TasksViewModel(server: try XCTUnwrap(URL(string: "https://example.test")), client: client)
 
-        await viewModel.refreshRecentRuns(
-            keeping: ["job-live": decodeCronJob(#"{"id": "job-live", "name": "Live"}"#)]
+        await viewModel.refreshRecentRuns()
+
+        XCTAssertTrue(viewModel.recentRuns.isEmpty)
+        XCTAssertNil(
+            viewModel.recentRunsErrorMessage,
+            "An older server without the feed is not an error — the section stays hidden."
+        )
+    }
+
+    @MainActor
+    func testTasksViewModelRecentRunsIdentityIsUniquePerCompletion() throws {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let response = try decoder.decode(
+            CronRecentRunsResponse.self,
+            from: Data("""
+            {"completions": [
+              {"job_id": "job123", "name": "Digest", "status": "ok", "completed_at": 1788301200},
+              {"job_id": "job123", "name": "Digest", "status": "ok", "completed_at": 1788214800}
+            ]}
+            """.utf8)
         )
 
-        XCTAssertEqual(viewModel.recentRuns.map(\.jobId), ["job-live"])
+        let completions = try XCTUnwrap(response.completions)
+        XCTAssertEqual(completions.count, 2)
+        XCTAssertNotEqual(
+            completions[0].id,
+            completions[1].id,
+            "Two runs of the same recurring task must not share ForEach identity."
+        )
     }
 
     private func makeClient(
