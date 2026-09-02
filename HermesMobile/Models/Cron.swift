@@ -243,7 +243,10 @@ struct CronOutputItem: Decodable, Equatable, Identifiable {
 /// One past run of a cron job from `/api/crons/history` (metadata only — the
 /// server lists run files without content; full content comes from `/api/crons/run`).
 struct CronRunEntry: Decodable, Equatable, Identifiable {
-    var id: String { filename ?? UUID().uuidString }
+    /// Stable identity captured once at decode: a missing filename falls back
+    /// to a fallback captured here, so repeated `id` access never yields a new
+    /// UUID (which would destroy SwiftUI row identity and restart sheet tasks).
+    let id: String
 
     let filename: String?
     let size: Int?
@@ -260,6 +263,7 @@ struct CronRunEntry: Decodable, Equatable, Identifiable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         filename = container.decodeLossyStringIfPresent(forKey: .filename)
+        id = filename ?? "run-\(UUID().uuidString)"
         size = ((try? container.decodeFlexibleDoubleIfPresent(forKey: .size)) ?? nil).map(Int.init)
         modified = (try? container.decodeIfPresent(CronDateValue.self, forKey: .modified)) ?? nil
         usage = (try? container.decodeIfPresent(CronRunUsage.self, forKey: .usage)) ?? nil

@@ -10,11 +10,20 @@ final class TaskDetailViewModel {
     private(set) var outputs: [CronOutputItem] = []
     private(set) var runHistory: [CronRunEntry] = []
     private(set) var runHistoryTotal: Int?
+    /// Number of server records already consumed across pages. Server paging
+    /// is positional, so the next request's offset must track fetched records —
+    /// not the deduplicated display list, or a repeated filename across a page
+    /// boundary would re-request an earlier offset forever.
+    private(set) var consumedRunCount = 0
     private(set) var isLoadingHistory = false
     private(set) var historyErrorMessage: String?
     private(set) var loadedRunDetail: CronRunDetailResponse?
     private(set) var isLoadingRunDetail = false
     private(set) var runDetailErrorMessage: String?
+    /// The run whose detail request is currently in flight; responses (and
+    /// errors) for any other run are discarded so a slow earlier request can
+    /// never overwrite a newer selection.
+    private var inFlightRunDetailFilename: String?
     /// Server-provided deliver targets; `nil` while unknown or when the
     /// endpoint is unavailable (the editor then falls back to free text).
     private(set) var deliveryOptions: [CronDeliveryOption]?
@@ -74,17 +83,20 @@ final class TaskDetailViewModel {
         do {
             let response = try await client.cronRunHistory(jobID: jobID, offset: 0, limit: Self.runHistoryPageSize)
             runHistory = response.runs ?? []
+            consumedRunCount = runHistory.count
             runHistoryTotal = response.total
         } catch {
             historyErrorMessage = error.localizedDescription
         }
     }
 
-    /// Appends the next page of runs; `true` when a request was made.
+    /// Appends the next page of runs; `true` when a request was made. The
+    /// paging offset counts server records consumed (including duplicates the
+    /// display list drops), so it always advances past the last fetched page.
     func loadMoreRunHistory() async -> Bool {
         guard let jobID = job.jobId else { return false }
 
-        let nextOffset = runHistory.count
+        let nextOffset = consumedRunCount
         guard canLoadMoreRunHistory, nextOffset > 0 else { return false }
 
         isLoadingHistory = true
@@ -93,6 +105,7 @@ final class TaskDetailViewModel {
         do {
             let response = try await client.cronRunHistory(jobID: jobID, offset: nextOffset, limit: Self.runHistoryPageSize)
             runHistory.append(contentsOf: response.runs ?? [])
+            consumedRunCount = nextOffset + (response.runs?.count ?? 0)
             runHistory = deduplicatedRunHistory()
             runHistoryTotal = response.total
             return true
@@ -104,7 +117,7 @@ final class TaskDetailViewModel {
 
     var canLoadMoreRunHistory: Bool {
         guard let total = runHistoryTotal else { return false }
-        return runHistory.count < total
+        return consumedRunCount < total
     }
 
     /// Server returns runs newest-first; dedupe defensively by filename so a
@@ -117,7 +130,10 @@ final class TaskDetailViewModel {
         }
     }
 
-    /// Loads the full content of one past run for the detail sheet.
+    /// Loads the full content of one past run for the detail sheet. Tracks the
+    /// in-flight filename so a slow response for an earlier selection (or an
+    /// error arriving after the user moved on) can never clobber the newer
+    /// selection's state. Cancellation is not a user-facing failure.
     func loadRunDetail(filename: String) async {
         guard let jobID = job.jobId, !filename.isEmpty else {
             runDetailErrorMessage = String(localized: "Missing run identifier.")
@@ -127,16 +143,23 @@ final class TaskDetailViewModel {
         isLoadingRunDetail = true
         loadedRunDetail = nil
         runDetailErrorMessage = nil
+        inFlightRunDetailFilename = filename
         defer { isLoadingRunDetail = false }
 
         do {
-            loadedRunDetail = try await client.cronRunDetail(jobID: jobID, filename: filename)
+            let response = try await client.cronRunDetail(jobID: jobID, filename: filename)
+            guard inFlightRunDetailFilename == filename else { return }
+            loadedRunDetail = response
+        } catch is CancellationError {
+            return
         } catch {
+            guard inFlightRunDetailFilename == filename else { return }
             runDetailErrorMessage = error.localizedDescription
         }
     }
 
     func clearRunDetail() {
+        inFlightRunDetailFilename = nil
         loadedRunDetail = nil
         runDetailErrorMessage = nil
     }

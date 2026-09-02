@@ -288,12 +288,18 @@ struct TaskDetailView: View {
                     .foregroundStyle(.secondary)
             } else {
                 ForEach(viewModel.runHistory) { run in
-                    Button {
-                        selectedRun = run
-                    } label: {
+                    if run.addressable {
+                        Button {
+                            selectedRun = run
+                        } label: {
+                            CronRunHistoryRow(run: run)
+                        }
+                        .buttonStyle(.plain)
+                    } else {
+                        // No filename means the server cannot serve this
+                        // run's content, so the row is display-only.
                         CronRunHistoryRow(run: run)
                     }
-                    .buttonStyle(.plain)
                 }
 
                 if viewModel.canLoadMoreRunHistory {
@@ -478,6 +484,15 @@ struct CronRunHistoryRow: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, 6)
         .contentShape(Rectangle())
+    }
+}
+
+extension CronRunEntry {
+    /// Whether this run can be opened: a filename is required to fetch its
+    /// content, so filename-less rows render display-only instead of opening
+    /// a detail sheet that can never load.
+    var addressable: Bool {
+        !(filename?.isEmpty ?? true)
     }
 }
 

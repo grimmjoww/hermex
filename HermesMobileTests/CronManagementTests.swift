@@ -88,6 +88,37 @@ final class CronManagementModelTests: XCTestCase {
         XCTAssertEqual(draft.provider, "openai")
     }
 
+    func testCronRunEntryKeepsStableIdentityWithoutFilename() throws {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let entry = try decoder.decode(
+            CronRunEntry.self,
+            from: Data(#"{"size": 10, "modified": 1788300000}"#.utf8)
+        )
+
+        XCTAssertEqual(entry.id, entry.id, "Repeated id access must not mint a new UUID.")
+        XCTAssertFalse(entry.addressable)
+        XCTAssertNil(entry.filename)
+
+        let named = try decoder.decode(
+            CronRunEntry.self,
+            from: Data(#"{"filename": "run-1.md", "size": 10}"#.utf8)
+        )
+        XCTAssertEqual(named.id, "run-1.md")
+        XCTAssertTrue(named.addressable)
+    }
+
+    func testCronRunEntryTreatsBlankFilenameAsUnaddressable() throws {
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let entry = try decoder.decode(
+            CronRunEntry.self,
+            from: Data(#"{"filename": "   ", "size": 10}"#.utf8)
+        )
+
+        XCTAssertFalse(entry.addressable, "A blank filename cannot address the run endpoint.")
+    }
+
     func testCronDeliverPickerFallsBackWithoutUsableOptions() {
         XCTAssertNil(CronDeliverPicker.options(serverOptions: nil, currentValue: "local"))
         XCTAssertNil(CronDeliverPicker.options(serverOptions: [], currentValue: "local"))
@@ -517,6 +548,115 @@ final class CronManagementViewModelTests: XCTestCase {
 
         viewModel.clearRunDetail()
         XCTAssertNil(viewModel.loadedRunDetail)
+        XCTAssertNil(viewModel.runDetailErrorMessage)
+    }
+
+    @MainActor
+    func testTaskDetailViewModelLoadMorePagingOffsetCountsServerRecordsNotDisplayList() async throws {
+        final class OffsetBox: @unchecked Sendable {
+            var offsets: [String] = []
+        }
+        let box = OffsetBox()
+
+        let client = makeClient { request in
+            switch request.url?.path {
+            case "/api/crons/history":
+                let components = URLComponents(url: try XCTUnwrap(request.url), resolvingAgainstBaseURL: false)
+                let query = Dictionary(uniqueKeysWithValues: (components?.queryItems ?? []).map { ($0.name, $0.value) })
+                box.offsets.append(query["offset"] ?? "nil")
+                if query["offset"] == "0" {
+                    return apiTestJSONResponse(
+                        #"{"job_id": "job123", "runs": [{"filename": "run-1.md"}, {"filename": "run-2.md"}], "total": 4, "offset": 0}"#,
+                        for: request
+                    )
+                }
+                if query["offset"] == "2" {
+                    // Page boundary repeats run-2.md; the display list dedupes
+                    // it, but the next offset must still advance by records.
+                    return apiTestJSONResponse(
+                        #"{"job_id": "job123", "runs": [{"filename": "run-2.md"}, {"filename": "run-3.md"}], "total": 4, "offset": 2}"#,
+                        for: request
+                    )
+                }
+                return apiTestJSONResponse(
+                    #"{"job_id": "job123", "runs": [{"filename": "run-4.md"}], "total": 4, "offset": 3}"#,
+                    for: request
+                )
+            default:
+                XCTFail("Unexpected request: \(request.url?.path ?? "nil")")
+                return apiTestJSONResponse("{}", for: request)
+            }
+        }
+        let viewModel = TaskDetailViewModel(
+            job: try decodeCronJob(#"{"id": "job123", "name": "Digest"}"#),
+            runningElapsed: nil,
+            server: try XCTUnwrap(URL(string: "https://example.test")),
+            client: client
+        )
+
+        await viewModel.loadRunHistory()
+        XCTAssertTrue(await viewModel.loadMoreRunHistory())
+        XCTAssertTrue(await viewModel.loadMoreRunHistory())
+
+        XCTAssertEqual(
+            box.offsets,
+            ["0", "2", "3"],
+            "Offsets must track consumed server records (including cross-page duplicates), not the deduped list."
+        )
+        XCTAssertEqual(viewModel.runHistory.map(\.filename), ["run-1.md", "run-2.md", "run-3.md", "run-4.md"])
+        XCTAssertFalse(viewModel.canLoadMoreRunHistory)
+    }
+
+    @MainActor
+    func testTaskDetailViewModelStaleRunDetailResponseDoesNotOverwriteNewerSelection() async throws {
+        final class Gate: @unchecked Sendable {
+            let releaseSlowResponse = DispatchSemaphore(value: 0)
+        }
+        let gate = Gate()
+
+        let client = makeClient { request in
+            let components = URLComponents(url: try XCTUnwrap(request.url), resolvingAgainstBaseURL: false)
+            let query = Dictionary(uniqueKeysWithValues: (components?.queryItems ?? []).map { ($0.name, $0.value) })
+
+            if query["filename"] == "slow.md" {
+                // Park the slow response until the test has already selected
+                // and completed a newer run, then deliver the stale body.
+                _ = gate.releaseSlowResponse.wait(timeout: .now() + 10)
+                return apiTestJSONResponse(
+                    #"{"job_id": "job123", "filename": "slow.md", "content": "STALE BODY"}"#,
+                    for: request
+                )
+            }
+            return apiTestJSONResponse(
+                #"{"job_id": "job123", "filename": "fast.md", "content": "fresh body"}"#,
+                for: request
+            )
+        }
+        let viewModel = TaskDetailViewModel(
+            job: try decodeCronJob(#"{"id": "job123", "name": "Digest"}"#),
+            runningElapsed: nil,
+            server: try XCTUnwrap(URL(string: "https://example.test")),
+            client: client
+        )
+
+        let slowTask = Task { await viewModel.loadRunDetail(filename: "slow.md") }
+        // Give the slow request a beat to capture in-flight state.
+        try await Task.sleep(nanoseconds: 100_000_000)
+
+        let fastTask = Task { await viewModel.loadRunDetail(filename: "fast.md") }
+        await fastTask.value
+        XCTAssertEqual(viewModel.loadedRunDetail?.content, "fresh body", "Newer selection loads normally.")
+
+        // Now release the stale response; it must be discarded.
+        gate.releaseSlowResponse.signal()
+        await slowTask.value
+
+        XCTAssertEqual(
+            viewModel.loadedRunDetail?.filename,
+            "fast.md",
+            "A late response for the earlier selection must not replace the newer selection."
+        )
+        XCTAssertEqual(viewModel.loadedRunDetail?.content, "fresh body")
         XCTAssertNil(viewModel.runDetailErrorMessage)
     }
 
