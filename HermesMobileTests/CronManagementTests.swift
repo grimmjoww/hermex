@@ -566,7 +566,7 @@ final class CronManagementViewModelTests: XCTestCase {
                 box.offsets.append(query["offset"] ?? "nil")
                 if query["offset"] == "0" {
                     return apiTestJSONResponse(
-                        #"{"job_id": "job123", "runs": [{"filename": "run-1.md"}, {"filename": "run-2.md"}], "total": 4, "offset": 0}"#,
+                        #"{"job_id": "job123", "runs": [{"filename": "run-1.md"}, {"filename": "run-2.md"}], "total": 5, "offset": 0}"#,
                         for: request
                     )
                 }
@@ -574,12 +574,19 @@ final class CronManagementViewModelTests: XCTestCase {
                     // Page boundary repeats run-2.md; the display list dedupes
                     // it, but the next offset must still advance by records.
                     return apiTestJSONResponse(
-                        #"{"job_id": "job123", "runs": [{"filename": "run-2.md"}, {"filename": "run-3.md"}], "total": 4, "offset": 2}"#,
+                        #"{"job_id": "job123", "runs": [{"filename": "run-2.md"}, {"filename": "run-3.md"}], "total": 5, "offset": 2}"#,
                         for: request
                     )
                 }
+                if query["offset"] == "4" {
+                    return apiTestJSONResponse(
+                        #"{"job_id": "job123", "runs": [{"filename": "run-4.md"}, {"filename": "run-5.md"}], "total": 5, "offset": 4}"#,
+                        for: request
+                    )
+                }
+                XCTFail("Unexpected offset: \(query["offset"] ?? "nil") — the deduped display list must not rewind paging.")
                 return apiTestJSONResponse(
-                    #"{"job_id": "job123", "runs": [{"filename": "run-4.md"}], "total": 4, "offset": 3}"#,
+                    #"{"job_id": "job123", "runs": [], "total": 5, "offset": 0}"#,
                     for: request
                 )
             default:
@@ -597,20 +604,21 @@ final class CronManagementViewModelTests: XCTestCase {
         await viewModel.loadRunHistory()
         XCTAssertTrue(await viewModel.loadMoreRunHistory())
         XCTAssertTrue(await viewModel.loadMoreRunHistory())
+        XCTAssertFalse(viewModel.canLoadMoreRunHistory)
 
         XCTAssertEqual(
             box.offsets,
-            ["0", "2", "3"],
+            ["0", "2", "4"],
             "Offsets must track consumed server records (including cross-page duplicates), not the deduped list."
         )
-        XCTAssertEqual(viewModel.runHistory.map(\.filename), ["run-1.md", "run-2.md", "run-3.md", "run-4.md"])
-        XCTAssertFalse(viewModel.canLoadMoreRunHistory)
+        XCTAssertEqual(viewModel.runHistory.map(\.filename), ["run-1.md", "run-2.md", "run-3.md", "run-4.md", "run-5.md"])
     }
 
     @MainActor
     func testTaskDetailViewModelStaleRunDetailResponseDoesNotOverwriteNewerSelection() async throws {
         final class Gate: @unchecked Sendable {
             let releaseSlowResponse = DispatchSemaphore(value: 0)
+            let releaseFastResponse = DispatchSemaphore(value: 0)
         }
         let gate = Gate()
 
@@ -620,13 +628,15 @@ final class CronManagementViewModelTests: XCTestCase {
 
             if query["filename"] == "slow.md" {
                 // Park the slow response until the test has already selected
-                // and completed a newer run, then deliver the stale body.
+                // a newer run, then deliver the stale body while the newer
+                // request is still in flight.
                 _ = gate.releaseSlowResponse.wait(timeout: .now() + 10)
                 return apiTestJSONResponse(
                     #"{"job_id": "job123", "filename": "slow.md", "content": "STALE BODY"}"#,
                     for: request
                 )
             }
+            _ = gate.releaseFastResponse.wait(timeout: .now() + 10)
             return apiTestJSONResponse(
                 #"{"job_id": "job123", "filename": "fast.md", "content": "fresh body"}"#,
                 for: request
@@ -644,19 +654,26 @@ final class CronManagementViewModelTests: XCTestCase {
         try await Task.sleep(nanoseconds: 100_000_000)
 
         let fastTask = Task { await viewModel.loadRunDetail(filename: "fast.md") }
-        await fastTask.value
-        XCTAssertEqual(viewModel.loadedRunDetail?.content, "fresh body", "Newer selection loads normally.")
+        try await Task.sleep(nanoseconds: 100_000_000)
+        XCTAssertTrue(viewModel.isLoadingRunDetail, "Newer request owns the loading flag.")
 
-        // Now release the stale response; it must be discarded.
+        // Release the stale response while the newer request is still parked.
         gate.releaseSlowResponse.signal()
         await slowTask.value
 
-        XCTAssertEqual(
-            viewModel.loadedRunDetail?.filename,
-            "fast.md",
-            "A late response for the earlier selection must not replace the newer selection."
+        XCTAssertNil(viewModel.loadedRunDetail, "Stale body must not populate the sheet.")
+        XCTAssertNil(viewModel.runDetailErrorMessage, "Stale errors must not surface either.")
+        XCTAssertTrue(
+            viewModel.isLoadingRunDetail,
+            "The superseded request finishing late must not clear the newer request's loading flag."
         )
+
+        gate.releaseFastResponse.signal()
+        await fastTask.value
+
+        XCTAssertEqual(viewModel.loadedRunDetail?.filename, "fast.md")
         XCTAssertEqual(viewModel.loadedRunDetail?.content, "fresh body")
+        XCTAssertFalse(viewModel.isLoadingRunDetail)
         XCTAssertNil(viewModel.runDetailErrorMessage)
     }
 

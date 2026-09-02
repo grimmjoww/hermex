@@ -492,7 +492,8 @@ extension CronRunEntry {
     /// content, so filename-less rows render display-only instead of opening
     /// a detail sheet that can never load.
     var addressable: Bool {
-        !(filename?.isEmpty ?? true)
+        guard let filename else { return false }
+        return !filename.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 }
 

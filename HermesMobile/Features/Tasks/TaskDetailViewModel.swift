@@ -144,7 +144,15 @@ final class TaskDetailViewModel {
         loadedRunDetail = nil
         runDetailErrorMessage = nil
         inFlightRunDetailFilename = filename
-        defer { isLoadingRunDetail = false }
+
+        defer {
+            // Only wind down the loading flag if this request is still the
+            // active one; a superseded request finishing late must not clear
+            // the newer request's spinner.
+            if inFlightRunDetailFilename == filename {
+                isLoadingRunDetail = false
+            }
+        }
 
         do {
             let response = try await client.cronRunDetail(jobID: jobID, filename: filename)
@@ -160,6 +168,7 @@ final class TaskDetailViewModel {
 
     func clearRunDetail() {
         inFlightRunDetailFilename = nil
+        isLoadingRunDetail = false
         loadedRunDetail = nil
         runDetailErrorMessage = nil
     }
