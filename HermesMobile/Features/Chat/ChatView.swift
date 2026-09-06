@@ -320,6 +320,8 @@ struct ChatView: View {
     @State private var attachmentImageItem: ChatAttachmentPreviewItem?
     /// A workspace file a chat link named; presented on the source viewer at its line.
     @State private var openedFileReference: FileReference?
+    /// Per-session read details (tracker item 2): usage now, more reads later.
+    @State private var showsSessionDetails = false
     @State private var pendingProfileSelection: ProfileSummary?
     @State private var showProfileNewSessionConfirmation = false
     /// Set while the destructive `/clear` confirmation is on screen. Holds the
@@ -825,6 +827,16 @@ struct ChatView: View {
                             }
                         }
 
+                        ChatToolbarActionSlot {
+                            Button {
+                                showsSessionDetails = true
+                            } label: {
+                                Label("Session Details", systemImage: "info.circle")
+                            }
+                            .disabled(viewModel.isViewingCachedData)
+                            .accessibilityLabel("Session Details")
+                        }
+
                         if showsGitControls, gitAvailabilityViewModel.hasRepository {
                             ChatToolbarActionSlot {
                                 gitActionsMenu
@@ -878,6 +890,9 @@ struct ChatView: View {
                 }
             }
             .sheet(item: $openedFileReference, content: fileReferenceSheet)
+            .sheet(isPresented: $showsSessionDetails) {
+                SessionDetailsView(session: session, server: server)
+            }
             .sheet(item: $activeGitSheet, content: gitSheet)
             .sheet(item: $turnDiffPresentation, content: turnDiffSheet)
             .alert(item: $gitAlert, content: gitAlertPresentation)

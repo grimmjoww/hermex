@@ -30,6 +30,8 @@ struct SessionListView: View {
     @State private var sessionOpenErrorMessage: String?
     @State private var sessionOpenTask: Task<Void, Never>?
     @State private var sessionExportShareItem: SessionExportShareItem?
+    /// Session whose read details (tracker item 2) are on screen.
+    @State private var sessionPendingDetails: SessionSummary?
     @State private var isPresentingProjectCreation = false
     @State private var isPresentingAddServer = false
     @State private var projectPendingDeletion: ProjectSummary?
@@ -147,6 +149,9 @@ struct SessionListView: View {
                     }
                 }
                 .presentationDetents([.height(180), .medium])
+            }
+            .sheet(item: $sessionPendingDetails) { session in
+                SessionDetailsView(session: session, server: server)
             }
             .alert("Session Action Failed", isPresented: sessionOpenErrorIsPresented) {
                 Button("OK", role: .cancel) {}
@@ -975,6 +980,9 @@ struct SessionListView: View {
             },
             export: { session, format in
                 Task { await export(session, format: format) }
+            },
+            showDetails: { session in
+                sessionPendingDetails = session
             }
         )
     }

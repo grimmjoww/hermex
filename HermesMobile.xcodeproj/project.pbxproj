@@ -50,6 +50,8 @@
 		C0415B0000000000000002 /* ProviderLimitsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0415A0000000000000002 /* ProviderLimitsCard.swift */; };
 		C0415B0000000000000003 /* APIClientProviderQuotaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0415A0000000000000003 /* APIClientProviderQuotaTests.swift */; };
 		C0415B0000000000000004 /* ProviderLimitCardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0415A0000000000000004 /* ProviderLimitCardTests.swift */; };
+		C0415B0000000000000005 /* SessionDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0415A0000000000000005 /* SessionDetailsView.swift */; };
+		C0415B0000000000000006 /* SessionDetailsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0415A0000000000000006 /* SessionDetailsViewModelTests.swift */; };
 		C04000000000000000000006 /* APIClient+Cron.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04000000000000000000016 /* APIClient+Cron.swift */; };
 		C04000000000000000000007 /* APIClient+Memory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04000000000000000000017 /* APIClient+Memory.swift */; };
 		C04000000000000000000008 /* APIClient+Skills.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04000000000000000000018 /* APIClient+Skills.swift */; };
@@ -498,6 +500,8 @@
 		C0415A0000000000000002 /* ProviderLimitsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProviderLimitsCard.swift; sourceTree = "<group>"; };
 		C0415A0000000000000003 /* APIClientProviderQuotaTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClientProviderQuotaTests.swift; sourceTree = "<group>"; };
 		C0415A0000000000000004 /* ProviderLimitCardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProviderLimitCardTests.swift; sourceTree = "<group>"; };
+		C0415A0000000000000005 /* SessionDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDetailsView.swift; sourceTree = "<group>"; };
+		C0415A0000000000000006 /* SessionDetailsViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDetailsViewModelTests.swift; sourceTree = "<group>"; };
 		C04000000000000000000016 /* APIClient+Cron.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "APIClient+Cron.swift"; sourceTree = "<group>"; };
 		C04000000000000000000017 /* APIClient+Memory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "APIClient+Memory.swift"; sourceTree = "<group>"; };
 		C04000000000000000000018 /* APIClient+Skills.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "APIClient+Skills.swift"; sourceTree = "<group>"; };
@@ -1093,6 +1097,7 @@
 				C5A0D8F5502048B6B9258B00 /* InsightsViewModelTests.swift */,
 				C0415A0000000000000004 /* ProviderLimitCardTests.swift */,
 				C0415A0000000000000003 /* APIClientProviderQuotaTests.swift */,
+				C0415A0000000000000006 /* SessionDetailsViewModelTests.swift */,
 				2BE8F2B38F094C4C9EB18300 /* SkillsViewModelTests.swift */,
 				26AB000000000000000000F3 /* APIClientProvidersTests.swift */,
 				26AB000000000000000000F4 /* ProvidersViewModelTests.swift */,
@@ -1261,6 +1266,7 @@
 				C08800000000000000000002 /* SessionHaptics.swift */,
 				A040C0DE0000000000000002 /* ProjectCreationSheet.swift */,
 				A048C0DE0000000000000002 /* SessionRenameSheet.swift */,
+				C0415A0000000000000005 /* SessionDetailsView.swift */,
 			);
 			path = SessionList;
 			sourceTree = "<group>";
@@ -2019,6 +2025,7 @@
 				C0DE512E0000000000000220A /* UsageTotalsGrid.swift in Sources */,
 				C0415B0000000000000002 /* ProviderLimitsCard.swift in Sources */,
 				C0DE512E0000000000000220C /* UsageModelRows.swift in Sources */,
+				C0415B0000000000000005 /* SessionDetailsView.swift in Sources */,
 				05814DEA5DE4690F730B1E15 /* InsightsViewModel.swift in Sources */,
 				26AB000000000000000000B1 /* ProvidersViewModel.swift in Sources */,
 				26AB000000000000000000B2 /* ProvidersView.swift in Sources */,
@@ -2147,6 +2154,7 @@
 				C5A0D8F5502048B6B9258B01 /* InsightsViewModelTests.swift in Sources */,
 				C0415B0000000000000004 /* ProviderLimitCardTests.swift in Sources */,
 				C0415B0000000000000003 /* APIClientProviderQuotaTests.swift in Sources */,
+				C0415B0000000000000006 /* SessionDetailsViewModelTests.swift in Sources */,
 				2BE8F2B38F094C4C9EB18301 /* SkillsViewModelTests.swift in Sources */,
 				26AB000000000000000000B3 /* APIClientProvidersTests.swift in Sources */,
 				26AB000000000000000000B4 /* ProvidersViewModelTests.swift in Sources */,

@@ -9,6 +9,8 @@ enum Endpoint {
     case sessionsSearch(query: String, content: Bool, depth: Int)
     case session(id: String, includeMessages: Bool, messageLimit: Int?, messageBefore: Int?, expandRenderable: Bool = false)
     case sessionStatus(id: String)
+    /// Read-only token counters for one session (tracker item 2 reads).
+    case sessionUsage(id: String)
     case importCLISession
     case newSession
     case renameSession
@@ -162,6 +164,8 @@ enum Endpoint {
             return "/api/session"
         case .sessionStatus:
             return "/api/session/status"
+        case .sessionUsage:
+            return "/api/session/usage"
         case .importCLISession:
             return "/api/session/import_cli"
         case .newSession:
@@ -448,6 +452,8 @@ enum Endpoint {
 
             return items
         case let .sessionStatus(id):
+            return [URLQueryItem(name: "session_id", value: id)]
+        case let .sessionUsage(id):
             return [URLQueryItem(name: "session_id", value: id)]
         case let .chatStream(streamID),
             let .chatCancel(streamID),

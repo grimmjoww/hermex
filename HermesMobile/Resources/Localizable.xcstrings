@@ -130430,7 +130430,431 @@
     "Updated %@ ago" : {"localizations" : {"de" : {"stringUnit" : {"state" : "needs_review", "value" : "Vor %@ aktualisiert"}}, "es" : {"stringUnit" : {"state" : "needs_review", "value" : "Actualizado hace %@"}}, "fr" : {"stringUnit" : {"state" : "needs_review", "value" : "Mis à jour il y a %@"}}, "it" : {"stringUnit" : {"state" : "needs_review", "value" : "Aggiornato %@ fa"}}, "pl" : {"stringUnit" : {"state" : "needs_review", "value" : "Zaktualizowano %@ temu"}}, "pt-BR" : {"stringUnit" : {"state" : "needs_review", "value" : "Atualizado há %@"}}, "nl" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ geleden bijgewerkt"}}, "tr" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ önce güncellendi"}}, "ru" : {"stringUnit" : {"state" : "needs_review", "value" : "Обновлено %@ назад"}}, "ja" : {"stringUnit" : {"state" : "needs_review", "value" : "%@前に更新"}}, "zh-Hans" : {"stringUnit" : {"state" : "needs_review", "value" : "%@前更新"}}, "ko" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ 전 업데이트됨"}}, "ar" : {"stringUnit" : {"state" : "needs_review", "value" : "تم التحديث قبل %@"}}, "he" : {"stringUnit" : {"state" : "needs_review", "value" : "עודכן לפני %@"}}, "ur" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ پہلے اپ ڈیٹ ہوا"}}, "zh-Hant" : {"stringUnit" : {"state" : "needs_review", "value" : "%@前更新"}}, "zh-HK" : {"stringUnit" : {"state" : "needs_review", "value" : "%@前更新"}}}},
     "%@ used" : {"localizations" : {"de" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ verbraucht"}}, "es" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ usados"}}, "fr" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ utilisés"}}, "it" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ utilizzati"}}, "pl" : {"stringUnit" : {"state" : "needs_review", "value" : "Wykorzystano %@"}}, "pt-BR" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ usados"}}, "nl" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ gebruikt"}}, "tr" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ kullanıldı"}}, "ru" : {"stringUnit" : {"state" : "needs_review", "value" : "Использовано %@"}}, "ja" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ 使用"}}, "zh-Hans" : {"stringUnit" : {"state" : "needs_review", "value" : "已用 %@"}}, "ko" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ 사용"}}, "ar" : {"stringUnit" : {"state" : "needs_review", "value" : "تم استخدام %@"}}, "he" : {"stringUnit" : {"state" : "needs_review", "value" : "נוצלו %@"}}, "ur" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ استعمال شدہ"}}, "zh-Hant" : {"stringUnit" : {"state" : "needs_review", "value" : "已用 %@"}}, "zh-HK" : {"stringUnit" : {"state" : "needs_review", "value" : "已用 %@"}}}},
     "%@ used of %@" : {"localizations" : {"de" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ von %@ verbraucht"}}, "es" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ usados de %@"}}, "fr" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ utilisés sur %@"}}, "it" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ utilizzati su %@"}}, "pl" : {"stringUnit" : {"state" : "needs_review", "value" : "Wykorzystano %@ z %@"}}, "pt-BR" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ usados de %@"}}, "nl" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ van %@ gebruikt"}}, "tr" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ / %@ kullanıldı"}}, "ru" : {"stringUnit" : {"state" : "needs_review", "value" : "Использовано %@ из %@"}}, "ja" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ / %@ 使用"}}, "zh-Hans" : {"stringUnit" : {"state" : "needs_review", "value" : "已用 %@，共 %@"}}, "ko" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ / %@ 사용"}}, "ar" : {"stringUnit" : {"state" : "needs_review", "value" : "تم استخدام %@ من %@"}}, "he" : {"stringUnit" : {"state" : "needs_review", "value" : "נוצלו %@ מתוך %@"}}, "ur" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ میں سے %@ استعمال شدہ"}}, "zh-Hant" : {"stringUnit" : {"state" : "needs_review", "value" : "已用 %@，共 %@"}}, "zh-HK" : {"stringUnit" : {"state" : "needs_review", "value" : "已用 %@，共 %@"}}}},
-    "%lld%% left" : {"localizations" : {"en" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "translated", "value" : "%lld%% left"}}, "other" : {"stringUnit" : {"state" : "translated", "value" : "%lld%% left"}}}}}, "de" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% übrig"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% übrig"}}}}}, "es" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% restante"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% restantes"}}}}}, "fr" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% restant"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% restants"}}}}}, "it" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% rimanente"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% rimanenti"}}}}}, "pl" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "Pozostało %lld%%"}}, "few" : {"stringUnit" : {"state" : "needs_review", "value" : "Pozostało %lld%%"}}, "many" : {"stringUnit" : {"state" : "needs_review", "value" : "Pozostało %lld%%"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "Pozostało %lld%%"}}}}}, "pt-BR" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% restante"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% restantes"}}}}}, "nl" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% over"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% over"}}}}}, "tr" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%%%lld kaldı"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%%%lld kaldı"}}}}}, "ru" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "Осталось %lld%%"}}, "few" : {"stringUnit" : {"state" : "needs_review", "value" : "Осталось %lld%%"}}, "many" : {"stringUnit" : {"state" : "needs_review", "value" : "Осталось %lld%%"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "Осталось %lld%%"}}}}}, "ja" : {"variations" : {"plural" : {"other" : {"stringUnit" : {"state" : "needs_review", "value" : "残り %lld%%"}}}}}, "zh-Hans" : {"variations" : {"plural" : {"other" : {"stringUnit" : {"state" : "needs_review", "value" : "剩余 %lld%%"}}}}}, "ko" : {"variations" : {"plural" : {"other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% 남음"}}}}}, "ar" : {"variations" : {"plural" : {"zero" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% متبقٍ"}}, "one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% متبقٍ"}}, "two" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% متبقٍ"}}, "few" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% متبقٍ"}}, "many" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% متبقٍ"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% متبقٍ"}}}}}, "he" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "נותרו %lld%%"}}, "two" : {"stringUnit" : {"state" : "needs_review", "value" : "נותרו %lld%%"}}, "many" : {"stringUnit" : {"state" : "needs_review", "value" : "נותרו %lld%%"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "נותרו %lld%%"}}}}}, "ur" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% باقی"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% باقی"}}}}}, "zh-Hant" : {"variations" : {"plural" : {"other" : {"stringUnit" : {"state" : "needs_review", "value" : "剩餘 %lld%%"}}}}}, "zh-HK" : {"variations" : {"plural" : {"other" : {"stringUnit" : {"state" : "needs_review", "value" : "剩餘 %lld%%"}}}}}}}
+    "%lld%% left" : {"localizations" : {"en" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "translated", "value" : "%lld%% left"}}, "other" : {"stringUnit" : {"state" : "translated", "value" : "%lld%% left"}}}}}, "de" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% übrig"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% übrig"}}}}}, "es" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% restante"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% restantes"}}}}}, "fr" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% restant"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% restants"}}}}}, "it" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% rimanente"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% rimanenti"}}}}}, "pl" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "Pozostało %lld%%"}}, "few" : {"stringUnit" : {"state" : "needs_review", "value" : "Pozostało %lld%%"}}, "many" : {"stringUnit" : {"state" : "needs_review", "value" : "Pozostało %lld%%"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "Pozostało %lld%%"}}}}}, "pt-BR" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% restante"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% restantes"}}}}}, "nl" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% over"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% over"}}}}}, "tr" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%%%lld kaldı"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%%%lld kaldı"}}}}}, "ru" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "Осталось %lld%%"}}, "few" : {"stringUnit" : {"state" : "needs_review", "value" : "Осталось %lld%%"}}, "many" : {"stringUnit" : {"state" : "needs_review", "value" : "Осталось %lld%%"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "Осталось %lld%%"}}}}}, "ja" : {"variations" : {"plural" : {"other" : {"stringUnit" : {"state" : "needs_review", "value" : "残り %lld%%"}}}}}, "zh-Hans" : {"variations" : {"plural" : {"other" : {"stringUnit" : {"state" : "needs_review", "value" : "剩余 %lld%%"}}}}}, "ko" : {"variations" : {"plural" : {"other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% 남음"}}}}}, "ar" : {"variations" : {"plural" : {"zero" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% متبقٍ"}}, "one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% متبقٍ"}}, "two" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% متبقٍ"}}, "few" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% متبقٍ"}}, "many" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% متبقٍ"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% متبقٍ"}}}}}, "he" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "נותרו %lld%%"}}, "two" : {"stringUnit" : {"state" : "needs_review", "value" : "נותרו %lld%%"}}, "many" : {"stringUnit" : {"state" : "needs_review", "value" : "נותרו %lld%%"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "נותרו %lld%%"}}}}}, "ur" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% باقی"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% باقی"}}}}}, "zh-Hant" : {"variations" : {"plural" : {"other" : {"stringUnit" : {"state" : "needs_review", "value" : "剩餘 %lld%%"}}}}}, "zh-HK" : {"variations" : {"plural" : {"other" : {"stringUnit" : {"state" : "needs_review", "value" : "剩餘 %lld%%"}}}}}}},
+    "Session Details" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "تفاصيل الجلسة"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sitzungsdetails"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Detalles de la sesión"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Détails de la session"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "פרטי הפעלה"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dettagli sessione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "セッションの詳細"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "세션 세부 정보"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sessiedetails"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szczegóły sesji"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Detalhes da sessão"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Сведения о сессии"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oturum Ayrıntıları"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "سیشن کی تفصیلات"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "會話詳細資訊"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "会话详情"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "會話詳細資訊"
+          }
+        }
+      }
+    },
+    "Token Usage" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "استخدام الرموز"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Token-Verbrauch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Uso de tokens"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Utilisation des jetons"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "שימוש באסימונים"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Utilizzo dei token"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "トークン使用量"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "토큰 사용량"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tokenverbruik"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Użycie tokenów"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Uso de tokens"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Использование токенов"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Belirteç Kullanımı"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ٹوکن کا استعمال"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "權杖用量"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "令牌用量"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "權杖用量"
+          }
+        }
+      }
+    },
+    "Could not load usage." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "تعذر تحميل الاستخدام."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nutzung konnte nicht geladen werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se pudo cargar el uso."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossible de charger l'utilisation."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "טעינת השימוש נכשלה."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossibile caricare l'utilizzo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "使用量を読み込めませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "사용량을 불러올 수 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kan gebruik niet laden."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie można załadować użycia."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Não foi possível carregar o uso."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не удалось загрузить статистику использования."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kullanım yüklenemedi."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "استعمال لوڈ نہیں ہو سکا۔"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "無法載入用量。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "无法加载用量。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "無法載入用量。"
+          }
+        }
+      }
+    },
+    "Token usage is not available for this session on this server." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "استخدام الرموز غير متاح لهذه الجلسة على هذا الخادم."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Token-Nutzung ist für diese Sitzung auf diesem Server nicht verfügbar."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El uso de tokens no está disponible para esta sesión en este servidor."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L'utilisation des jetons n'est pas disponible pour cette session sur ce serveur."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "שימוש באסימונים אינו זמין עבור הפעלה זו בשרת זה."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L'utilizzo dei token non è disponibile per questa sessione su questo server."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "このサーバーではこのセッションのトークン使用量を利用できません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "이 서버에서는 이 세션의 토큰 사용량을 사용할 수 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tokenverbruik is niet beschikbaar voor deze sessie op deze server."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Użycie tokenów nie jest dostępne dla tej sesji na tym serwerze."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O uso de tokens não está disponível para esta sessão neste servidor."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Использование токенов недоступно для этой сессии на этом сервере."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bu sunucuda bu oturum için belirteç kullanımı mevcut değil."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "اس سرور پر اس سیشن کے لیے ٹوکن کا استعمال دستیاب نہیں ہے۔"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "此伺服器上不提供此會話嘅權杖用量。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "此服务器上不提供此会话的令牌用量。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "此伺服器上不提供此會話的權杖用量。"
+          }
+        }
+      }
+    }
   },
   "version" : "1.0"
 }

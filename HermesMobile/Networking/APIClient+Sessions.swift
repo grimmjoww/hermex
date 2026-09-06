@@ -49,6 +49,13 @@ extension APIClient {
         try await send(endpoint: .sessionStatus(id: id), method: "GET")
     }
 
+    /// Read-only token counters for one session (`GET /api/session/usage`).
+    /// Servers without the endpoint answer 404 — callers treat that as
+    /// "unavailable here", never as a session error.
+    func sessionUsage(id: String) async throws -> SessionUsageResponse {
+        try await send(endpoint: .sessionUsage(id: id), method: "GET")
+    }
+
     /// Imports a CLI or messaging session into the WebUI-owned session store.
     /// The returned session is authoritative for whether continuation is safe.
     func importExternalSession(id: String) async throws -> SessionResponse {

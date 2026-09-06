@@ -65,6 +65,48 @@ struct SessionMutationResponse: Decodable {
     let error: String?
 }
 
+/// GET /api/session/usage — token counters for one session
+/// (upstream `session_ops.session_usage`). Every field decodes tolerantly:
+/// servers without the endpoint answer 404 (handled by callers), and older
+/// payloads may omit the optional cost/model fields.
+struct SessionUsageResponse: Decodable, Equatable {
+    let inputTokens: Int
+    let outputTokens: Int
+    let totalTokens: Int
+    let estimatedCost: Double?
+    let model: String?
+
+    enum CodingKeys: String, CodingKey {
+        case inputTokens = "input_tokens"
+        case outputTokens = "output_tokens"
+        case totalTokens = "total_tokens"
+        case estimatedCost = "estimated_cost"
+        case model
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        inputTokens = (try? container.decodeIfPresent(Int.self, forKey: .inputTokens)) ?? 0
+        outputTokens = (try? container.decodeIfPresent(Int.self, forKey: .outputTokens)) ?? 0
+        totalTokens = (try? container.decodeIfPresent(Int.self, forKey: .totalTokens)) ?? 0
+        estimatedCost = Self.flexibleDouble(container, .estimatedCost)
+        model = try? container.decodeIfPresent(String.self, forKey: .model)
+    }
+
+    private static func flexibleDouble(
+        _ container: KeyedDecodingContainer<CodingKeys>,
+        _ key: CodingKeys
+    ) -> Double? {
+        if let value = try? container.decodeIfPresent(Double.self, forKey: key) {
+            return value
+        }
+        if let text = try? container.decodeIfPresent(String.self, forKey: key) {
+            return Double(text)
+        }
+        return nil
+    }
+}
+
 struct ProjectsResponse: Decodable, Equatable {
     let projects: [ProjectSummary]?
 

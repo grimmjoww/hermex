@@ -1498,4 +1498,72 @@ final class APIClientSessionDetailTests: APIClientTestCase {
         XCTAssertEqual(anchoredGroup.hasFailedTool, true)
         XCTAssertEqual(unanchoredGroup.id, "live-tools-unanchored")
     }
+
+    // MARK: - Session Usage (GET /api/session/usage)
+
+    func testSessionUsageBuildsExpectedQueryAndDecodesPayload() async throws {
+        let client = makeClient { request in
+            XCTAssertEqual(request.url?.path, "/api/session/usage")
+            XCTAssertEqual(request.httpMethod, "GET")
+
+            let components = URLComponents(url: try XCTUnwrap(request.url), resolvingAgainstBaseURL: false)
+            let query = Dictionary(uniqueKeysWithValues: (components?.queryItems ?? []).map { ($0.name, $0.value) })
+            XCTAssertEqual(query["session_id"], "abc123")
+
+            return apiTestJSONResponse("""
+            {
+              "input_tokens": 1200,
+              "output_tokens": 340,
+              "total_tokens": 1540,
+              "estimated_cost": 0.0123,
+              "model": "glm-5.3-flash"
+            }
+            """, for: request)
+        }
+
+        let response = try await client.sessionUsage(id: "abc123")
+
+        XCTAssertEqual(response.inputTokens, 1200)
+        XCTAssertEqual(response.outputTokens, 340)
+        XCTAssertEqual(response.totalTokens, 1540)
+        XCTAssertEqual(response.estimatedCost ?? 0, 0.0123, accuracy: 0.0001)
+        XCTAssertEqual(response.model, "glm-5.3-flash")
+    }
+
+    func testSessionUsageToleratesMissingOptionalFields() async throws {
+        let client = makeClient { request in
+            // Older servers may omit cost and model; the endpoint still answers
+            // the token counters (upstream session_usage always sends them).
+            return apiTestJSONResponse("""
+            {
+              "input_tokens": 5,
+              "output_tokens": 7,
+              "total_tokens": 12
+            }
+            """, for: request)
+        }
+
+        let response = try await client.sessionUsage(id: "abc123")
+
+        XCTAssertEqual(response.inputTokens, 5)
+        XCTAssertEqual(response.outputTokens, 7)
+        XCTAssertEqual(response.totalTokens, 12)
+        XCTAssertNil(response.estimatedCost)
+        XCTAssertNil(response.model)
+    }
+
+    func testSessionUsageSurfaces404AsHTTPError() async throws {
+        let client = makeClient { request in
+            apiTestJSONResponse("""
+            { "error": "Session not found" }
+            """, for: request, status: 404)
+        }
+
+        do {
+            _ = try await client.sessionUsage(id: "gone")
+            XCTFail("Expected a 404 APIError.http")
+        } catch let APIError.http(statusCode, _) {
+            XCTAssertEqual(statusCode, 404)
+        }
+    }
 }
