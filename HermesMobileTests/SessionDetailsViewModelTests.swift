@@ -26,6 +26,16 @@ final class SessionDetailsViewModelTests: XCTestCase {
         return try decoder.decode(SessionSummary.self, from: Data(payload.utf8))
     }
 
+    private func makeClient(
+        handler: @escaping (URLRequest) throws -> (HTTPURLResponse, Data)
+    ) -> APIClient {
+        MockURLProtocol.requestHandler = handler
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [MockURLProtocol.self]
+        let session = URLSession(configuration: configuration)
+        return APIClient(baseURL: URL(string: "https://example.test")!, session: session)
+    }
+
     func testLoadFetchesUsageAndPopulatesRows() async throws {
         let client = makeClient { request in
             XCTAssertEqual(request.url?.path, "/api/session/usage")
