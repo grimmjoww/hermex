@@ -11,6 +11,14 @@ enum Endpoint {
     case sessionStatus(id: String)
     /// Read-only token counters for one session (tracker item 2 reads).
     case sessionUsage(id: String)
+    /// Bounded lifecycle report for a session's continuation lineage.
+    case sessionLineageReport(id: String)
+    /// Server-wide recovery audit; the sheet filters items to one session.
+    case sessionRecoveryAudit
+    /// Read-only git-worktree snapshot for a worktree-backed session.
+    case sessionWorktreeStatus(id: String)
+    /// Model-generated summary of recent activity; POST, on demand only.
+    case sessionHandoffSummary
     case importCLISession
     case newSession
     case renameSession
@@ -166,6 +174,14 @@ enum Endpoint {
             return "/api/session/status"
         case .sessionUsage:
             return "/api/session/usage"
+        case .sessionLineageReport:
+            return "/api/session/lineage/report"
+        case .sessionRecoveryAudit:
+            return "/api/session/recovery/audit"
+        case .sessionWorktreeStatus:
+            return "/api/session/worktree/status"
+        case .sessionHandoffSummary:
+            return "/api/session/handoff-summary"
         case .importCLISession:
             return "/api/session/import_cli"
         case .newSession:
@@ -454,6 +470,12 @@ enum Endpoint {
         case let .sessionStatus(id):
             return [URLQueryItem(name: "session_id", value: id)]
         case let .sessionUsage(id):
+            return [URLQueryItem(name: "session_id", value: id)]
+        case let .sessionLineageReport(id):
+            return [URLQueryItem(name: "session_id", value: id)]
+        case .sessionRecoveryAudit:
+            return []
+        case let .sessionWorktreeStatus(id):
             return [URLQueryItem(name: "session_id", value: id)]
         case let .chatStream(streamID),
             let .chatCancel(streamID),

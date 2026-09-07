@@ -56,6 +56,32 @@ final class ContractReadinessTests: XCTestCase {
                 path: "/api/session/status",
                 query: ["session_id": "session-123"]
             ),
+            .init(
+                name: "session lineage report",
+                method: "GET",
+                endpoint: .sessionLineageReport(id: "session-123"),
+                path: "/api/session/lineage/report",
+                query: ["session_id": "session-123"]
+            ),
+            .init(
+                name: "session recovery audit",
+                method: "GET",
+                endpoint: .sessionRecoveryAudit,
+                path: "/api/session/recovery/audit"
+            ),
+            .init(
+                name: "session worktree status",
+                method: "GET",
+                endpoint: .sessionWorktreeStatus(id: "session-123"),
+                path: "/api/session/worktree/status",
+                query: ["session_id": "session-123"]
+            ),
+            .init(
+                name: "session handoff summary",
+                method: "POST",
+                endpoint: .sessionHandoffSummary,
+                path: "/api/session/handoff-summary"
+            ),
             .init(name: "import external session", method: "POST", endpoint: .importCLISession, path: "/api/session/import_cli"),
             .init(name: "new session", method: "POST", endpoint: .newSession, path: "/api/session/new"),
             .init(name: "rename session", method: "POST", endpoint: .renameSession, path: "/api/session/rename"),

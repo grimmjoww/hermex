@@ -76,10 +76,6 @@ sub-paths of a group. Do not reorder casually.
 | `/api/session/draft` | roadmap | P4 | write | Advanced Session Maintenance |
 | `/api/session/compress/` | roadmap | P4 | write | Advanced Session Maintenance |
 | `/api/session/conversation-rounds` | roadmap | P4 | write | Advanced Session Maintenance |
-| `/api/session/handoff-summary` | roadmap | P4 | read | Advanced Session Maintenance |
-| `/api/session/lineage/` | roadmap | P4 | read | Advanced Session Maintenance |
-| `/api/session/worktree/` | roadmap | P4 | write | Advanced Session Maintenance |
-| `/api/session/recovery/` | roadmap | P4 | write | Advanced Session Maintenance |
 | `/api/sessions/cleanup` | roadmap | P4 | write | Advanced Session Maintenance — bulk cleanup |
 | `/api/provider/` | roadmap | P3 | secret | Provider Management — `quota` shipped as the Usage screen's Limits cards (#415); `cost-history` remains roadmap |
 | `/api/providers` | roadmap | P3 | secret | Provider Management — read-only status screen shipped (#26); key set/delete remains roadmap |

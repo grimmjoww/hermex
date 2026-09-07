@@ -66,7 +66,8 @@ struct SessionMutationResponse: Decodable {
 }
 
 /// GET /api/session/usage — token counters for one session
-/// (upstream `session_ops.session_usage`). Every field decodes tolerantly:
+/// (upstream `session_ops.session_usage`). Keys stay camelCase (the shared
+/// client decoder converts snake_case) and every field decodes tolerantly:
 /// servers without the endpoint answer 404 (handled by callers), and older
 /// payloads may omit the optional cost/model fields.
 struct SessionUsageResponse: Decodable, Equatable {
@@ -77,33 +78,237 @@ struct SessionUsageResponse: Decodable, Equatable {
     let model: String?
 
     enum CodingKeys: String, CodingKey {
-        case inputTokens = "input_tokens"
-        case outputTokens = "output_tokens"
-        case totalTokens = "total_tokens"
-        case estimatedCost = "estimated_cost"
-        case model
+        case inputTokens, outputTokens, totalTokens, estimatedCost, model
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        inputTokens = (try? container.decodeIfPresent(Int.self, forKey: .inputTokens)) ?? 0
-        outputTokens = (try? container.decodeIfPresent(Int.self, forKey: .outputTokens)) ?? 0
-        totalTokens = (try? container.decodeIfPresent(Int.self, forKey: .totalTokens)) ?? 0
-        estimatedCost = Self.flexibleDouble(container, .estimatedCost)
-        model = try? container.decodeIfPresent(String.self, forKey: .model)
+        inputTokens = container.decodeLossyIntIfPresent(forKey: .inputTokens) ?? 0
+        outputTokens = container.decodeLossyIntIfPresent(forKey: .outputTokens) ?? 0
+        totalTokens = container.decodeLossyIntIfPresent(forKey: .totalTokens) ?? 0
+        estimatedCost = container.decodeLossyDoubleIfPresent(forKey: .estimatedCost)
+        model = container.decodeLossyStringIfPresent(forKey: .model)
+    }
+}
+
+// MARK: - Session details reads (tracker #395 item 2)
+//
+// Shapes mirror `api/agent_sessions.py` (lineage report), `api/worktrees.py`
+// (worktree status), `api/session_recovery.py` (recovery audit) and the
+// handoff-summary handler in `api/routes.py` in hermes-webui. Keys stay
+// camelCase (the shared client decoder converts snake_case) and every field
+// decodes lossily so partial payloads never throw.
+
+/// One row of a lineage report (`segments` / `children` arrays).
+struct SessionLineageRow: Decodable, Equatable {
+    let sessionID: String?
+    let role: String?
+    let title: String?
+    let source: String?
+    let startedAt: Double?
+    let updatedAt: Double?
+    let endReason: String?
+    let active: Bool?
+    let archived: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case sessionID, role, title, source, startedAt, updatedAt, endReason, active, archived
     }
 
-    private static func flexibleDouble(
-        _ container: KeyedDecodingContainer<CodingKeys>,
-        _ key: CodingKeys
-    ) -> Double? {
-        if let value = try? container.decodeIfPresent(Double.self, forKey: key) {
-            return value
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        sessionID = container.decodeLossyStringIfPresent(forKey: .sessionID)
+        role = container.decodeLossyStringIfPresent(forKey: .role)
+        title = container.decodeLossyStringIfPresent(forKey: .title)
+        source = container.decodeLossyStringIfPresent(forKey: .source)
+        startedAt = container.decodeLossyDoubleIfPresent(forKey: .startedAt)
+        updatedAt = container.decodeLossyDoubleIfPresent(forKey: .updatedAt)
+        endReason = container.decodeLossyStringIfPresent(forKey: .endReason)
+        active = container.decodeLossyBoolIfPresent(forKey: .active)
+        archived = container.decodeLossyBoolIfPresent(forKey: .archived)
+    }
+}
+
+/// GET /api/session/lineage/report — bounded lifecycle report for a session's
+/// continuation lineage. `segments` lists the continuation chain (tip first),
+/// `children` lists sibling branches hanging off that chain.
+struct SessionLineageReport: Decodable, Equatable {
+    let found: Bool
+    let lineageKey: String?
+    let tipSessionID: String?
+    let totalSegments: Int
+    let manualReview: Bool
+    let segments: [SessionLineageRow]
+    let children: [SessionLineageRow]
+
+    enum CodingKeys: String, CodingKey {
+        case found, lineageKey, tipSessionID, totalSegments, materializedSegments, manualReview, segments, children
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        found = container.decodeLossyBoolIfPresent(forKey: .found) ?? false
+        lineageKey = container.decodeLossyStringIfPresent(forKey: .lineageKey)
+        tipSessionID = container.decodeLossyStringIfPresent(forKey: .tipSessionID)
+        totalSegments = container.decodeLossyIntIfPresent(forKey: .totalSegments)
+            ?? container.decodeLossyIntIfPresent(forKey: .materializedSegments)
+            ?? 0
+        manualReview = container.decodeLossyBoolIfPresent(forKey: .manualReview) ?? false
+        segments = (try? container.decodeIfPresent([SessionLineageRow].self, forKey: .segments)) ?? []
+        children = (try? container.decodeIfPresent([SessionLineageRow].self, forKey: .children)) ?? []
+    }
+}
+
+/// Ahead/behind counters inside `GET /api/session/worktree/status`.
+struct SessionWorktreeAheadBehind: Decodable, Equatable {
+    let ahead: Int
+    let behind: Int
+    let available: Bool
+    let upstream: String?
+
+    enum CodingKeys: String, CodingKey {
+        case ahead, behind, available, upstream
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        ahead = container.decodeLossyIntIfPresent(forKey: .ahead) ?? 0
+        behind = container.decodeLossyIntIfPresent(forKey: .behind) ?? 0
+        available = container.decodeLossyBoolIfPresent(forKey: .available) ?? false
+        upstream = container.decodeLossyStringIfPresent(forKey: .upstream)
+    }
+}
+
+/// GET /api/session/worktree/status — read-only snapshot of the session's git
+/// worktree. Only worktree-backed sessions have one; plain sessions get a 400
+/// ("Session is not worktree-backed"), which callers treat as "no section".
+struct SessionWorktreeStatus: Decodable, Equatable {
+    let path: String?
+    let exists: Bool
+    let dirty: Bool
+    let untrackedCount: Int
+    let ahead: Int
+    let behind: Int
+    let aheadBehindAvailable: Bool
+    let upstream: String?
+    let lockedByStream: Bool
+    let lockedByTerminal: Bool
+    let listed: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case path, exists, dirty, untrackedCount, aheadBehind
+        case lockedByStream, lockedByTerminal, listed
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        path = container.decodeLossyStringIfPresent(forKey: .path)
+        exists = container.decodeLossyBoolIfPresent(forKey: .exists) ?? false
+        dirty = container.decodeLossyBoolIfPresent(forKey: .dirty) ?? false
+        untrackedCount = container.decodeLossyIntIfPresent(forKey: .untrackedCount) ?? 0
+        lockedByStream = container.decodeLossyBoolIfPresent(forKey: .lockedByStream) ?? false
+        lockedByTerminal = container.decodeLossyBoolIfPresent(forKey: .lockedByTerminal) ?? false
+        listed = container.decodeLossyBoolIfPresent(forKey: .listed) ?? false
+        if let aheadBehind = try? container.decodeIfPresent(SessionWorktreeAheadBehind.self, forKey: .aheadBehind) {
+            ahead = aheadBehind.ahead
+            behind = aheadBehind.behind
+            aheadBehindAvailable = aheadBehind.available
+            upstream = aheadBehind.upstream
+        } else {
+            ahead = 0
+            behind = 0
+            aheadBehindAvailable = false
+            upstream = nil
         }
-        if let text = try? container.decodeIfPresent(String.self, forKey: key) {
-            return Double(text)
+    }
+}
+
+/// One repairable/unsafe finding from the recovery audit.
+struct SessionRecoveryAuditItem: Decodable, Equatable, Hashable {
+    let sessionID: String?
+    let kind: String?
+    let category: String?
+    let recommendation: String?
+    let liveMessages: Int?
+    let bakMessages: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case sessionID, kind, category, recommendation, liveMessages, bakMessages
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        sessionID = container.decodeLossyStringIfPresent(forKey: .sessionID)
+        kind = container.decodeLossyStringIfPresent(forKey: .kind)
+        category = container.decodeLossyStringIfPresent(forKey: .category)
+        recommendation = container.decodeLossyStringIfPresent(forKey: .recommendation)
+        liveMessages = container.decodeLossyIntIfPresent(forKey: .liveMessages)
+        bakMessages = container.decodeLossyIntIfPresent(forKey: .bakMessages)
+    }
+}
+
+/// GET /api/session/recovery/audit — server-wide recovery health snapshot.
+/// The endpoint takes no session parameter; the app filters `items` down to
+/// the viewed session for the per-session sheet.
+struct SessionRecoveryAudit: Decodable, Equatable {
+    let status: String?
+    let okCount: Int
+    let repairableCount: Int
+    let unsafeToRepairCount: Int
+    let items: [SessionRecoveryAuditItem]
+
+    enum CodingKeys: String, CodingKey {
+        case status, summary, items
+    }
+
+    private enum SummaryKeys: String, CodingKey {
+        case ok, repairable, unsafeToRepair
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        status = container.decodeLossyStringIfPresent(forKey: .status)
+        items = (try? container.decodeIfPresent([SessionRecoveryAuditItem].self, forKey: .items)) ?? []
+        if let summary = try? container.nestedContainer(keyedBy: SummaryKeys.self, forKey: .summary) {
+            okCount = summary.decodeLossyIntIfPresent(forKey: .ok) ?? 0
+            repairableCount = summary.decodeLossyIntIfPresent(forKey: .repairable) ?? 0
+            unsafeToRepairCount = summary.decodeLossyIntIfPresent(forKey: .unsafeToRepair) ?? 0
+        } else {
+            okCount = 0
+            repairableCount = 0
+            unsafeToRepairCount = 0
         }
-        return nil
+    }
+
+    /// The audit items that belong to a given session.
+    func items(forSession sessionID: String?) -> [SessionRecoveryAuditItem] {
+        guard let sessionID, !sessionID.isEmpty else { return [] }
+        return items.filter { $0.sessionID == sessionID }
+    }
+}
+
+/// POST /api/session/handoff-summary — model-generated summary of recent
+/// activity. Costs tokens on the server, so the app only calls it on demand.
+struct SessionHandoffSummary: Decodable, Equatable {
+    let ok: Bool?
+    let summary: String?
+    let messageCount: Int?
+    let rounds: Int?
+    let fallback: Bool?
+    let warning: String?
+
+    enum CodingKeys: String, CodingKey {
+        case ok, summary, messageCount, rounds, fallback, warning
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        ok = container.decodeLossyBoolIfPresent(forKey: .ok)
+        summary = container.decodeLossyStringIfPresent(forKey: .summary)
+        messageCount = container.decodeLossyIntIfPresent(forKey: .messageCount)
+        rounds = container.decodeLossyIntIfPresent(forKey: .rounds)
+        fallback = container.decodeLossyBoolIfPresent(forKey: .fallback)
+        warning = container.decodeLossyStringIfPresent(forKey: .warning)
     }
 }
 
