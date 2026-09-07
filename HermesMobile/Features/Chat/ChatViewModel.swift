@@ -947,6 +947,19 @@ final class ChatViewModel {
             currentModel = response.session?.model ?? option.id
             currentModelProvider = response.session?.modelProvider ?? option.providerID
             currentWorkspace = response.session?.workspace ?? currentWorkspace
+            // Server stamps the new model's context_length onto the session on
+            // every model swap; older test fixtures and any server that omits it
+            // must not blow away a usable snapshot.
+            if let session = response.session, session.contextLength != nil || session.thresholdTokens != nil || session.lastPromptTokens != nil || session.inputTokens != nil || session.outputTokens != nil || session.estimatedCost != nil {
+                contextWindowSnapshot = ContextWindowSnapshot(
+                    contextLength: session.contextLength,
+                    thresholdTokens: session.thresholdTokens,
+                    lastPromptTokens: session.lastPromptTokens,
+                    inputTokens: session.inputTokens,
+                    outputTokens: session.outputTokens,
+                    estimatedCost: session.estimatedCost
+                )
+            }
             pendingExplicitModelPick = true
             // Still inside the isUpdatingComposerConfiguration window, so the
             // effort menu stays disabled until the new model's gating lands —
