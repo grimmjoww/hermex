@@ -1068,6 +1068,116 @@ final class ChatViewModelSendTests: XCTestCase {
         XCTAssertEqual(text, "Summarize this\n\n[Attached files: /tmp/workspace/report.pdf]")
     }
 
+    func testChatMessageTextSynthesizesUploadedFormForEmptyDraft() {
+        // Attachment-only send (#403): with no typed draft the message text is
+        // synthesized exactly like the web UI (`static/messages.js`), since the
+        // server requires non-empty text.
+        let image = PendingAttachment(
+            name: "photo.jpg",
+            path: "/tmp/workspace/photo.jpg",
+            mime: "image/jpeg",
+            size: 45_678,
+            isImage: true,
+            thumbnailData: nil
+        )
+        let file = PendingAttachment(
+            name: "report.pdf",
+            path: "/tmp/workspace/report.pdf",
+            mime: "application/pdf",
+            size: 1234,
+            isImage: false,
+            thumbnailData: nil
+        )
+
+        XCTAssertEqual(
+            PendingAttachment.chatMessageText(draft: "", attachments: [image, file]),
+            "I've uploaded 2 file(s): /tmp/workspace/photo.jpg, /tmp/workspace/report.pdf"
+        )
+        XCTAssertEqual(
+            PendingAttachment.chatMessageText(draft: "   ", attachments: [file]),
+            "I've uploaded 1 file(s): /tmp/workspace/report.pdf",
+            "Whitespace-only draft counts as attachment-only"
+        )
+        XCTAssertEqual(
+            PendingAttachment.chatMessageText(draft: "", attachments: []),
+            "",
+            "No attachments: the empty draft passes through unchanged"
+        )
+    }
+
+    @MainActor
+    func testSendMessageWithEmptyDraftAndStagedAttachmentSendsSynthesizedMessage() async throws {
+        let streamClient = SpySSEStreamingClient()
+        var startMessage: String?
+        var startAttachments: [[String: Any]]?
+
+        let viewModel = try makeViewModel(streamClient: streamClient) { request in
+            switch request.url?.path {
+            case "/api/upload":
+                return apiTestJSONResponse("""
+                {
+                  "filename": "photo.jpg",
+                  "path": "/tmp/workspace/photo.jpg",
+                  "size": 45678,
+                  "mime": "image/jpeg",
+                  "is_image": true
+                }
+                """, for: request)
+            case "/api/chat/start":
+                let body = try apiTestJSONBody(from: request)
+                startMessage = body["message"] as? String
+                startAttachments = body["attachments"] as? [[String: Any]]
+                return apiTestJSONResponse("""
+                {
+                  "session_id": "session-abc",
+                  "stream_id": "stream-403"
+                }
+                """, for: request)
+            default:
+                XCTFail("Unexpected request path: \(request.url?.path ?? "nil")")
+                throw URLError(.badURL)
+            }
+        }
+
+        // Stage one attachment through the real coordinator (mocked upload).
+        let staged = await viewModel.uploadAttachment(
+            data: Data("fake-jpeg".utf8),
+            filename: "photo.jpg"
+        )
+        try XCTUnwrap(staged)
+        XCTAssertEqual(viewModel.pendingAttachments.count, 1)
+
+        // Empty draft + staged attachment: previously rejected, now sends.
+        let didStart = await viewModel.sendMessage("")
+
+        XCTAssertTrue(didStart)
+        XCTAssertEqual(startMessage, "I've uploaded 1 file(s): /tmp/workspace/photo.jpg")
+        XCTAssertEqual(viewModel.activeStreamID, "stream-403")
+
+        // Optimistic bubble shows the synthesized text plus the attachment.
+        let optimistic = try XCTUnwrap(viewModel.messages.first)
+        XCTAssertEqual(optimistic.role, "user")
+        XCTAssertEqual(optimistic.content, "I've uploaded 1 file(s): /tmp/workspace/photo.jpg")
+        XCTAssertEqual(optimistic.attachments?.count, 1)
+        XCTAssertEqual(optimistic.attachments?.first?.path, "/tmp/workspace/photo.jpg")
+        XCTAssertEqual(try XCTUnwrap(startAttachments)?.count, 1)
+
+        // The composer strip is empty after a successful send.
+        XCTAssertTrue(viewModel.pendingAttachments.isEmpty)
+    }
+
+    @MainActor
+    func testSendMessageWithEmptyDraftAndNoAttachmentsStillReturnsFalse() async {
+        let viewModel = try? makeViewModel { _ in
+            XCTFail("No request should be made for an empty draft with no attachments")
+            throw URLError(.badURL)
+        }
+
+        let didStart = await viewModel?.sendMessage("") ?? false
+
+        XCTAssertFalse(didStart)
+    }
+
     @MainActor
     func testSubmitGoalAttachesToServerStartedKickoffStream() async throws {
         let streamClient = SpySSEStreamingClient()
@@ -7147,6 +7257,43 @@ final class ChatViewModelSendTests: XCTestCase {
         XCTAssertEqual(streamClient.startedURLs.first?.path, "/api/chat/stream")
     }
 
+    /// #406 fallback ordering: an older server omits `pending_started_at`, so the
+    /// run clock falls back to the latest user turn rather than the moment this
+    /// session was opened.
+    @MainActor
+    func testLoadMessagesWithoutPendingStartedAtSeedsRunStartFromLatestUserMessage() async throws {
+        let viewModel = try makeViewModel { request in
+            switch request.url?.path {
+            case "/api/session":
+                return apiTestJSONResponse("""
+                {
+                  "session": {
+                    "session_id": "session-abc",
+                    "title": "Planning",
+                    "active_stream_id": "stream-123",
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": "Keep working",
+                        "timestamp": 1770000100,
+                        "message_id": "user-1"
+                      }
+                    ]
+                  }
+                }
+                """, for: request)
+            default:
+                XCTFail("Unexpected request path: \(request.url?.path ?? "nil")")
+                throw URLError(.badURL)
+            }
+        }
+
+        await viewModel.loadMessages()
+
+        XCTAssertEqual(viewModel.activeStreamID, "stream-123")
+        XCTAssertEqual(viewModel.activeRunStartedAt, Date(timeIntervalSince1970: 1_770_000_100))
+    }
+
     @MainActor
     func testLoadMessagesDoesNotFailForWebUICreatedSessionDecodeDrift() async throws {
         let viewModel = try makeViewModel { request in
@@ -8939,6 +9086,354 @@ final class ChatViewModelSendTests: XCTestCase {
         XCTAssertEqual(viewModel.transcriptRelayoutScrollToken, 0)
     }
 
+    // MARK: - Workspace file references (`@path`)
+
+    /// `.` holds `a/`; `a/` holds `b.md` and `c.md`.
+    private func fileListingJSON(for path: String) -> String? {
+        switch path {
+        case ".":
+            return #"{"path": ".", "entries": [{"name": "a", "path": "a", "type": "dir", "is_dir": true}]}"#
+        case "a":
+            return #"{"path": "a", "entries": [{"name": "b.md", "path": "a/b.md", "type": "file"}, {"name": "c.md", "path": "a/c.md", "type": "file"}]}"#
+        default:
+            return nil
+        }
+    }
+
+    private func listedPath(in request: URLRequest) -> String {
+        let components = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)
+        return components?.queryItems?.first { $0.name == "path" }?.value ?? "."
+    }
+
+    /// What the composer picked dies with the view model, so a chat re-entered
+    /// from the session list has to ask the server whether a `@word` in the
+    /// restored draft is really a file before it can draw the chip again.
+    @MainActor
+    func testARestoredDraftReferenceIsConfirmedAgainstTheWorkspace() async throws {
+        let listed = LockedStrings()
+        let viewModel = try makeViewModel { [self] request in
+            XCTAssertEqual(request.url?.path, "/api/list")
+            let path = listedPath(in: request)
+            listed.append(path)
+            return apiTestJSONResponse(try XCTUnwrap(fileListingJSON(for: path)), for: request)
+        }
+
+        XCTAssertFalse(viewModel.composerChipCatalog.containsFile(path: "a/b.md"))
+
+        await viewModel.loadFileChipReferences(draft: "read @a/b.md please")
+
+        XCTAssertEqual(listed.values, ["a"])
+        XCTAssertTrue(viewModel.fileChipPaths.contains("a/b.md"))
+        XCTAssertTrue(viewModel.composerChipCatalog.containsFile(path: "a/b.md"))
+        XCTAssertEqual(viewModel.transcriptRelayoutScrollToken, 1)
+    }
+
+    /// A `@word` the folder does not hold stays plain text, and the answer
+    /// sticks: it must not cost a listing on every later transcript update.
+    @MainActor
+    func testACandidateItsFolderDoesNotHoldIsNeverDrawnAsAChip() async throws {
+        let listed = LockedStrings()
+        let viewModel = try makeViewModel { [self] request in
+            let path = listedPath(in: request)
+            listed.append(path)
+            return apiTestJSONResponse(try XCTUnwrap(fileListingJSON(for: path)), for: request)
+        }
+
+        await viewModel.loadFileChipReferences(draft: "see @a/missing.md now")
+        await viewModel.loadFileChipReferences(draft: "see @a/missing.md now")
+
+        XCTAssertEqual(listed.values, ["a"])
+        XCTAssertFalse(viewModel.composerChipCatalog.containsFile(path: "a/missing.md"))
+        XCTAssertEqual(viewModel.transcriptRelayoutScrollToken, 0)
+    }
+
+    @MainActor
+    func testTwoReferencesInOneFolderCostOneListing() async throws {
+        let listed = LockedStrings()
+        let viewModel = try makeViewModel { [self] request in
+            let path = listedPath(in: request)
+            listed.append(path)
+            return apiTestJSONResponse(try XCTUnwrap(fileListingJSON(for: path)), for: request)
+        }
+
+        await viewModel.loadFileChipReferences(draft: "@a/b.md and @a/c.md together")
+
+        XCTAssertEqual(listed.values, ["a"])
+        XCTAssertTrue(viewModel.composerChipCatalog.containsFile(path: "a/b.md"))
+        XCTAssertTrue(viewModel.composerChipCatalog.containsFile(path: "a/c.md"))
+    }
+
+    /// The confirmation lives on a task the view model owns, so a caller
+    /// cancelled by an unrelated view update cannot take the listing down with
+    /// it — and the next caller finds the answer rather than asking again.
+    @MainActor
+    func testACancelledCallerDoesNotCancelTheConfirmation() async throws {
+        let listed = LockedStrings()
+        let listingStarted = expectation(description: "listing started")
+        let releaseListing = DispatchSemaphore(value: 0)
+
+        let viewModel = try makeViewModel { [self] request in
+            let path = listedPath(in: request)
+            listed.append(path)
+            listingStarted.fulfill()
+            releaseListing.wait()
+            return apiTestJSONResponse(try XCTUnwrap(fileListingJSON(for: path)), for: request)
+        }
+
+        let cancelled = Task { await viewModel.loadFileChipReferences(draft: "@a/b.md here") }
+        await fulfillment(of: [listingStarted], timeout: 5)
+        cancelled.cancel()
+        releaseListing.signal()
+
+        await viewModel.loadFileChipReferences(draft: "@a/b.md here")
+
+        XCTAssertEqual(listed.values, ["a"])
+        XCTAssertTrue(viewModel.composerChipCatalog.containsFile(path: "a/b.md"))
+    }
+
+    /// A listing that failed is not an answer, so the candidate stays open and
+    /// the next pass asks again.
+    @MainActor
+    func testAFailedListingIsRetriedByTheNextCaller() async throws {
+        let attempts = LockedStrings()
+        let viewModel = try makeViewModel { [self] request in
+            let path = listedPath(in: request)
+            attempts.append(path)
+            if attempts.values.count == 1 {
+                return apiTestJSONResponse(#"{"error": "boom"}"#, for: request, status: 500)
+            }
+            return apiTestJSONResponse(try XCTUnwrap(fileListingJSON(for: path)), for: request)
+        }
+
+        await viewModel.loadFileChipReferences(draft: "@a/b.md here")
+        XCTAssertFalse(viewModel.composerChipCatalog.containsFile(path: "a/b.md"))
+
+        await viewModel.loadFileChipReferences(draft: "@a/b.md here")
+
+        XCTAssertEqual(attempts.values, ["a", "a"])
+        XCTAssertTrue(viewModel.composerChipCatalog.containsFile(path: "a/b.md"))
+    }
+
+    /// The sent bubble draws from the same catalog, so a reference that only
+    /// exists in the loaded transcript has to be confirmed too.
+    @MainActor
+    func testASentMessageReferenceIsConfirmedAfterTheTranscriptLoads() async throws {
+        let viewModel = try makeViewModel { [self] request in
+            switch request.url?.path {
+            case "/api/session":
+                return apiTestJSONResponse("""
+                {
+                  "session": {
+                    "session_id": "session-abc",
+                    "title": "Planning",
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": "look at @a/b.md",
+                        "timestamp": 1770000100,
+                        "message_id": "user-1"
+                      }
+                    ]
+                  }
+                }
+                """, for: request)
+            case "/api/list":
+                let path = listedPath(in: request)
+                return apiTestJSONResponse(try XCTUnwrap(fileListingJSON(for: path)), for: request)
+            default:
+                XCTFail("Unexpected request path: \(request.url?.path ?? "nil")")
+                throw URLError(.badURL)
+            }
+        }
+
+        await viewModel.loadMessages()
+        await viewModel.loadFileChipReferences(draft: "")
+
+        XCTAssertTrue(viewModel.composerChipCatalog.containsFile(path: "a/b.md"))
+    }
+
+    /// A path the panel just offered is a chip immediately: the listing that
+    /// produced the row is the same answer a confirmation pass would get.
+    @MainActor
+    func testAPickedPathIsNeverRecheckedAgainstTheServer() async throws {
+        let listed = LockedStrings()
+        let viewModel = try makeViewModel { [self] request in
+            let path = listedPath(in: request)
+            listed.append(path)
+            return apiTestJSONResponse(try XCTUnwrap(fileListingJSON(for: path)), for: request)
+        }
+
+        viewModel.recordFileChipReference("a/b.md")
+        XCTAssertTrue(viewModel.composerChipCatalog.containsFile(path: "a/b.md"))
+
+        await viewModel.loadFileChipReferences(draft: "@a/b.md here")
+
+        XCTAssertTrue(listed.values.isEmpty)
+    }
+
+    /// A path is only a file inside the workspace it was found in, so switching
+    /// the session's workspace has to take every confirmed chip with it —
+    /// including one accepted straight from the panel — and ask again.
+    @MainActor
+    func testAWorkspaceChangeDropsConfirmedFileChipsAndAsksAgain() async throws {
+        let listed = LockedStrings()
+        let viewModel = try makeViewModel { [self] request in
+            guard request.url?.path == "/api/list" else {
+                return apiTestJSONResponse(#"""
+                {"session": {"session_id": "session-abc", "workspace": "/tmp/other", "model": "gpt-5.4"}}
+                """#, for: request)
+            }
+            let path = listedPath(in: request)
+            listed.append(path)
+            return apiTestJSONResponse(try XCTUnwrap(fileListingJSON(for: path)), for: request)
+        }
+
+        await viewModel.loadFileChipReferences(draft: "@a/b.md here")
+        viewModel.recordFileChipReference("a/c.md")
+        XCTAssertTrue(viewModel.composerChipCatalog.containsFile(path: "a/b.md"))
+        XCTAssertTrue(viewModel.composerChipCatalog.containsFile(path: "a/c.md"))
+        let scopeBefore = viewModel.fileChipScopeRevision
+
+        await viewModel.selectWorkspacePath("/tmp/other")
+
+        XCTAssertTrue(viewModel.fileChipPaths.isEmpty)
+        XCTAssertFalse(viewModel.composerChipCatalog.containsFile(path: "a/b.md"))
+        XCTAssertFalse(viewModel.composerChipCatalog.containsFile(path: "a/c.md"))
+        XCTAssertGreaterThan(viewModel.fileChipScopeRevision, scopeBefore)
+
+        await viewModel.loadFileChipReferences(draft: "@a/b.md here")
+
+        // The folder is listed again rather than answered from a cache filled
+        // against the old root.
+        XCTAssertEqual(listed.values, ["a", "a"])
+        XCTAssertTrue(viewModel.composerChipCatalog.containsFile(path: "a/b.md"))
+    }
+
+    /// A pass still listing the old workspace's folders when the workspace moves
+    /// is cancelled outright: it stops before the next folder, settles nothing,
+    /// and the candidates are asked again under the new root.
+    @MainActor
+    func testAWorkspaceChangeCancelsTheConfirmationPassInFlight() async throws {
+        let listed = LockedStrings()
+        let listingStarted = expectation(description: "first listing started")
+        let releaseListing = DispatchSemaphore(value: 0)
+
+        let viewModel = try makeViewModel { [self] request in
+            guard request.url?.path == "/api/list" else {
+                return apiTestJSONResponse(#"""
+                {"session": {"session_id": "session-abc", "workspace": "/tmp/other", "model": "gpt-5.4"}}
+                """#, for: request)
+            }
+
+            let path = listedPath(in: request)
+            listed.append(path)
+            if listed.values.count == 1 {
+                listingStarted.fulfill()
+                releaseListing.wait()
+            }
+            return apiTestJSONResponse(
+                #"{"path": "\#(path)", "entries": [{"name": "b.md", "path": "\#(path)/b.md", "type": "file"}]}"#,
+                for: request
+            )
+        }
+
+        let draft = "@a/b.md and @e/b.md here"
+        let stale = Task { await viewModel.loadFileChipReferences(draft: draft) }
+        await fulfillment(of: [listingStarted], timeout: 5)
+
+        // Moves `currentWorkspace` synchronously, before its own request goes out.
+        await viewModel.selectWorkspacePath("/tmp/other")
+        releaseListing.signal()
+        await stale.value
+
+        // Stopped between folders: `e` was never asked for, and `a`'s listing
+        // arrived after the reset so it settled nothing.
+        XCTAssertEqual(listed.values, ["a"])
+        XCTAssertTrue(viewModel.fileChipPaths.isEmpty)
+
+        await viewModel.loadFileChipReferences(draft: draft)
+
+        XCTAssertEqual(listed.values, ["a", "a", "e"])
+        XCTAssertTrue(viewModel.composerChipCatalog.containsFile(path: "a/b.md"))
+        XCTAssertTrue(viewModel.composerChipCatalog.containsFile(path: "e/b.md"))
+    }
+
+    /// Every folder the candidates name is answered, a batch at a time, rather
+    /// than the first batch and silence for the rest.
+    @MainActor
+    func testEveryFolderIsAnsweredBeyondOneBatch() async throws {
+        let folders = (0..<25).map { "d\($0)" }
+        let listed = LockedStrings()
+        let viewModel = try makeViewModel { [self] request in
+            let path = listedPath(in: request)
+            listed.append(path)
+            return apiTestJSONResponse(
+                #"{"path": "\#(path)", "entries": [{"name": "f.md", "path": "\#(path)/f.md", "type": "file"}]}"#,
+                for: request
+            )
+        }
+
+        let draft = folders.map { "@\($0)/f.md" }.joined(separator: " ") + " done"
+        await viewModel.loadFileChipReferences(draft: draft)
+
+        XCTAssertEqual(listed.values, folders)
+        for folder in folders {
+            XCTAssertTrue(
+                viewModel.composerChipCatalog.containsFile(path: "\(folder)/f.md"),
+                "\(folder)/f.md was never confirmed"
+            )
+        }
+    }
+
+    /// A cache-first transcript swapped for the server's copy can rewrite a
+    /// message in the middle of the list without changing the count or the last
+    /// id, so the swap itself has to be the signal.
+    @MainActor
+    func testReplacingAMiddleUserMessageIsRescanned() async throws {
+        let loads = LockedStrings()
+        let viewModel = try makeViewModel { [self] request in
+            switch request.url?.path {
+            case "/api/session":
+                loads.append("session")
+                let firstUserContent = loads.values.count == 1 ? "hello" : "look at @a/b.md"
+                return apiTestJSONResponse("""
+                {
+                  "session": {
+                    "session_id": "session-abc",
+                    "title": "Planning",
+                    "messages": [
+                      {"role": "user", "content": "\(firstUserContent)", "timestamp": 1770000100, "message_id": "user-1"},
+                      {"role": "assistant", "content": "sure", "timestamp": 1770000101, "message_id": "assistant-1"},
+                      {"role": "user", "content": "thanks", "timestamp": 1770000102, "message_id": "user-2"}
+                    ]
+                  }
+                }
+                """, for: request)
+            case "/api/list":
+                let path = listedPath(in: request)
+                return apiTestJSONResponse(try XCTUnwrap(fileListingJSON(for: path)), for: request)
+            default:
+                XCTFail("Unexpected request path: \(request.url?.path ?? "nil")")
+                throw URLError(.badURL)
+            }
+        }
+
+        await viewModel.loadMessages()
+        await viewModel.loadFileChipReferences(draft: "")
+        let revisionBefore = viewModel.transcriptRevision
+        XCTAssertFalse(viewModel.composerChipCatalog.containsFile(path: "a/b.md"))
+
+        await viewModel.loadMessages()
+
+        XCTAssertEqual(viewModel.messages.count, 3)
+        XCTAssertEqual(viewModel.messages.last?.messageId, "user-2")
+        XCTAssertGreaterThan(viewModel.transcriptRevision, revisionBefore)
+
+        await viewModel.loadFileChipReferences(draft: "")
+
+        XCTAssertTrue(viewModel.composerChipCatalog.containsFile(path: "a/b.md"))
+    }
+
     private static func ttsUnavailableResponse(for request: URLRequest) -> (HTTPURLResponse, Data) {
         let response = HTTPURLResponse(
             url: request.url!,
@@ -9159,6 +9654,27 @@ final class ChatViewModelSendTests: XCTestCase {
     }
 }
 
+/// Every `/api/list` path a handler was asked for, in call order. Handlers run
+/// off the test's thread, so the record needs its own lock.
+private final class LockedStrings: @unchecked Sendable {
+    private let lock = NSLock()
+    private var stored: [String] = []
+
+    func append(_ value: String) {
+        lock.lock()
+        defer { lock.unlock() }
+
+        stored.append(value)
+    }
+
+    var values: [String] {
+        lock.lock()
+        defer { lock.unlock() }
+
+        return stored
+    }
+}
+
 private final class LockedCounter {
     private let lock = NSLock()
     private var value = 0
@@ -9189,7 +9705,7 @@ private final class SpyChatLiveActivityManager: AgentLiveActivityManaging {
 
     private(set) var ends: [End] = []
 
-    func start(sessionID: String, sessionTitle: String, streamID: String?) {}
+    func start(sessionID: String, sessionTitle: String, streamID: String?, startedAt: Date) {}
 
     func update(_ event: AgentLiveActivityEvent) {}
 

@@ -79,6 +79,12 @@ final class SessionListViewModel {
     /// server omits the field — the Archived entry stays hidden then.
     private(set) var archivedCount: Int?
 
+    /// Attention state per streaming session, refreshed on the same tick that
+    /// already checks stream liveness. Only sessions with an active stream ever
+    /// have an entry, and the map is reassigned only when a value actually
+    /// changes so rows do not invalidate once a second.
+    private(set) var attentionStatesBySessionID: [String: SessionRowAttentionState] = [:]
+
     private(set) var remoteContentSearchSessionIDs: [String] = []
     /// `match_preview` per content-matched session from the last search, so a
     /// row can show why it matched. Empty against servers that omit the field.
@@ -252,6 +258,9 @@ final class SessionListViewModel {
                         sessions = cachedSessions
                         isViewingCachedData = true
                         errorMessage = nil
+                        // Cached rows carry no live server state, so nothing can
+                        // still be waiting on the user here.
+                        clearAttentionStates()
                     } else {
                         isViewingCachedData = false
                         errorMessage = error.localizedDescription
@@ -447,7 +456,109 @@ final class SessionListViewModel {
             }
         }
 
+        return await refreshAttentionStates()
+    }
+
+    /// The attention state a row should show, or nil while nothing is pending.
+    func attentionState(for session: SessionSummary) -> SessionRowAttentionState? {
+        guard let sessionID = Self.nonEmpty(session.sessionId) else { return nil }
+        return attentionStatesBySessionID[sessionID]
+    }
+
+    /// One approval probe and one clarification probe per streaming row, on the
+    /// tick the caller already runs. Sessions without an active stream are never
+    /// probed, and there is no separate polling loop or timer. A row's two
+    /// probes go out together, so N streaming rows cost about N round trips per
+    /// tick instead of 2N.
+    private func refreshAttentionStates() async -> ActiveSessionStateRefreshResult {
+        let streamingSessions = sessions.filter { SessionRowView.isActiveStreaming($0) }
+        guard !streamingSessions.isEmpty else {
+            clearAttentionStates()
+            return .unchanged
+        }
+
+        var refreshed: [String: SessionRowAttentionState] = [:]
+
+        for session in streamingSessions {
+            guard let sessionID = Self.nonEmpty(session.sessionId) else { continue }
+
+            async let pendingApproval = client.approvalPending(sessionID: sessionID)
+            async let pendingClarification = client.clarifyPending(sessionID: sessionID)
+
+            // A failed probe is not evidence that nothing is pending, so it
+            // keeps what the last successful tick knew rather than letting the
+            // row fall back to "Working". The rule is deliberately simple: a
+            // previous `.approval` masks any clarification, so it carries no
+            // clarify knowledge, and a clarify probe that fails behind it
+            // resolves to nothing pending.
+            let previous = attentionStatesBySessionID[sessionID]
+            var hasPendingApproval = false
+            var hasPendingClarification = false
+            var probeErrors: [Error] = []
+
+            do {
+                let response = try await pendingApproval
+                hasPendingApproval = Self.hasPending(response.pending)
+            } catch {
+                probeErrors.append(error)
+                hasPendingApproval = previous == .approval
+            }
+
+            do {
+                let response = try await pendingClarification
+                hasPendingClarification = Self.hasPending(response.pending)
+            } catch {
+                probeErrors.append(error)
+                hasPendingClarification = previous == .input
+            }
+
+            for error in probeErrors {
+                guard !isCancellationError(error) else { return .unchanged }
+                if case APIError.unauthorized = error {
+                    lastError = error
+                    return .failed
+                }
+            }
+
+            refreshed[sessionID] = SessionRowAttentionState.resolve(
+                session: session,
+                hasPendingApproval: hasPendingApproval,
+                hasPendingClarification: hasPendingClarification
+            )
+        }
+
+        guard refreshed != attentionStatesBySessionID else { return .unchanged }
+        attentionStatesBySessionID = refreshed
         return .unchanged
+    }
+
+    private static func hasPending(_ pending: PendingApproval?) -> Bool {
+        guard let pending else { return false }
+        return !pending.isEmpty
+    }
+
+    private static func hasPending(_ pending: PendingClarification?) -> Bool {
+        guard let pending else { return false }
+        return !pending.isEmpty
+    }
+
+    private func clearAttentionStates() {
+        guard !attentionStatesBySessionID.isEmpty else { return }
+        attentionStatesBySessionID = [:]
+    }
+
+    /// Attention state only means something for a row the server still reports
+    /// as streaming, so a reload that ends a stream drops that row's entry.
+    private func pruneAttentionStates() {
+        guard !attentionStatesBySessionID.isEmpty else { return }
+
+        let streamingSessionIDs = Set(sessions.compactMap { session -> String? in
+            guard SessionRowView.isActiveStreaming(session) else { return nil }
+            return Self.nonEmpty(session.sessionId)
+        })
+        let pruned = attentionStatesBySessionID.filter { streamingSessionIDs.contains($0.key) }
+        guard pruned != attentionStatesBySessionID else { return }
+        attentionStatesBySessionID = pruned
     }
 
     func loadSessionForDeepLink(id rawSessionID: String, modelContext: ModelContext? = nil) async -> SessionSummary? {
@@ -1148,6 +1259,7 @@ final class SessionListViewModel {
         guard let animation else {
             sessions = newSessions
             archivedCount = newArchivedCount
+            pruneAttentionStates()
             return
         }
 
@@ -1155,6 +1267,7 @@ final class SessionListViewModel {
             sessions = newSessions
             archivedCount = newArchivedCount
         }
+        pruneAttentionStates()
     }
 
     /// Content-match rows narrowed to sessions the list can actually show, in

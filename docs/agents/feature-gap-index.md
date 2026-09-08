@@ -70,19 +70,14 @@ sub-paths of a group. Do not reorder casually.
 | `/api/git/` | roadmap | P3 | write | Git review & management — branches/diff/commit/stage/push/pull/discard/stash |
 | `/api/rollback/` | roadmap | P3 | write | Git Info & Rollback — checkpoint list/diff/restore |
 | `/api/crons/history` | roadmap | P2 | read | Cron History / Recent Runs |
-| `/api/session/usage` | roadmap | P2 | read | Session Token Usage — mostly covered by the context ring |
 | `/api/session/import` | roadmap | P3 | — | Session Import (JSON / CLI) |
 | `/api/session/duplicate` | roadmap | P4 | — | Session Duplicate — branch-based duplicate already covers the need |
 | `/api/session/toolsets` | roadmap | P4 | write | Advanced Session Maintenance |
 | `/api/session/draft` | roadmap | P4 | write | Advanced Session Maintenance |
 | `/api/session/compress/` | roadmap | P4 | write | Advanced Session Maintenance |
 | `/api/session/conversation-rounds` | roadmap | P4 | write | Advanced Session Maintenance |
-| `/api/session/handoff-summary` | roadmap | P4 | read | Advanced Session Maintenance |
-| `/api/session/lineage/` | roadmap | P4 | read | Advanced Session Maintenance |
-| `/api/session/worktree/` | roadmap | P4 | write | Advanced Session Maintenance |
-| `/api/session/recovery/` | roadmap | P4 | write | Advanced Session Maintenance |
 | `/api/sessions/cleanup` | roadmap | P4 | write | Advanced Session Maintenance — bulk cleanup |
-| `/api/provider/` | roadmap | P3 | secret | Provider Management — quota/cost history |
+| `/api/provider/` | roadmap | P3 | secret | Provider Management — `quota` shipped as the Usage screen's Limits cards (#415); `cost-history` remains roadmap |
 | `/api/providers` | roadmap | P3 | secret | Provider Management — read-only status screen shipped (#26); key set/delete remains roadmap |
 | `/api/models/refresh` | roadmap | P3 | — | Provider / Model Management |
 | `/api/models/live` | roadmap | P3 | — | Provider / Model Management — live model fetch |

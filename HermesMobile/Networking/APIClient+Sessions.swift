@@ -49,6 +49,46 @@ extension APIClient {
         try await send(endpoint: .sessionStatus(id: id), method: "GET")
     }
 
+    /// Read-only token counters for one session (`GET /api/session/usage`).
+    /// Servers without the endpoint answer 404 — callers treat that as
+    /// "unavailable here", never as a session error.
+    func sessionUsage(id: String) async throws -> SessionUsageResponse {
+        try await send(endpoint: .sessionUsage(id: id), method: "GET")
+    }
+
+    /// Bounded lifecycle report for a session's continuation lineage
+    /// (`GET /api/session/lineage/report`). 404 on older servers.
+    func sessionLineageReport(id: String) async throws -> SessionLineageReport {
+        try await send(endpoint: .sessionLineageReport(id: id), method: "GET")
+    }
+
+    /// Server-wide recovery health audit (`GET /api/session/recovery/audit`).
+    /// 404 on older servers.
+    func sessionRecoveryAudit() async throws -> SessionRecoveryAudit {
+        try await send(endpoint: .sessionRecoveryAudit, method: "GET")
+    }
+
+    /// Read-only git-worktree snapshot (`GET /api/session/worktree/status`).
+    /// Non-worktree sessions get a 400 — callers treat that as "no section".
+    /// The server nests the snapshot under a `status` key.
+    func sessionWorktreeStatus(id: String) async throws -> SessionWorktreeStatus {
+        let envelope: SessionWorktreeStatusEnvelope = try await send(
+            endpoint: .sessionWorktreeStatus(id: id),
+            method: "GET"
+        )
+        return envelope.status ?? SessionWorktreeStatus()
+    }
+
+    /// Generates an on-demand activity summary (`POST /api/session/handoff-summary`).
+    /// Costs model tokens server-side; only call it from an explicit user action.
+    func sessionHandoffSummary(id: String) async throws -> SessionHandoffSummary {
+        try await send(
+            endpoint: .sessionHandoffSummary,
+            method: "POST",
+            body: SessionIDRequest(sessionId: id)
+        )
+    }
+
     /// Imports a CLI or messaging session into the WebUI-owned session store.
     /// The returned session is authoritative for whether continuation is safe.
     func importExternalSession(id: String) async throws -> SessionResponse {

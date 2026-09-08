@@ -46,6 +46,12 @@
 		C04000000000000000000003 /* APIClient+Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04000000000000000000013 /* APIClient+Chat.swift */; };
 		C04000000000000000000004 /* APIClient+Workspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04000000000000000000014 /* APIClient+Workspace.swift */; };
 		C04000000000000000000005 /* APIClient+ServerPanels.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04000000000000000000015 /* APIClient+ServerPanels.swift */; };
+		C0415B0000000000000001 /* APIClient+ProviderQuota.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0415A0000000000000001 /* APIClient+ProviderQuota.swift */; };
+		C0415B0000000000000002 /* ProviderLimitsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0415A0000000000000002 /* ProviderLimitsCard.swift */; };
+		C0415B0000000000000003 /* APIClientProviderQuotaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0415A0000000000000003 /* APIClientProviderQuotaTests.swift */; };
+		C0415B0000000000000004 /* ProviderLimitCardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0415A0000000000000004 /* ProviderLimitCardTests.swift */; };
+		C0415B0000000000000005 /* SessionDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0415A0000000000000005 /* SessionDetailsView.swift */; };
+		C0415B0000000000000006 /* SessionDetailsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0415A0000000000000006 /* SessionDetailsViewModelTests.swift */; };
 		C04000000000000000000006 /* APIClient+Cron.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04000000000000000000016 /* APIClient+Cron.swift */; };
 		C04000000000000000000007 /* APIClient+Memory.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04000000000000000000017 /* APIClient+Memory.swift */; };
 		C04000000000000000000008 /* APIClient+Skills.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04000000000000000000018 /* APIClient+Skills.swift */; };
@@ -90,6 +96,7 @@
 		C15210000000000000000006 /* OnboardingConnectPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15200000000000000000006 /* OnboardingConnectPage.swift */; };
 		C15210000000000000000007 /* OnboardingFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15200000000000000000007 /* OnboardingFlowTests.swift */; };
 		C0391000000000000000000F /* SessionListMutationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0390000000000000000000F /* SessionListMutationTests.swift */; };
+		C03910000000000000000019 /* SessionRowAttentionStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C03900000000000000000019 /* SessionRowAttentionStateTests.swift */; };
 		A10900000000000000000002 /* SessionNavigationStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10900000000000000000012 /* SessionNavigationStateTests.swift */; };
 		19C1150000000000000000A3 /* CliSessionsSyncModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19C1150000000000000000A4 /* CliSessionsSyncModelTests.swift */; };
 		C03910000000000000000010 /* APIEndpointContractTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C03900000000000000000010 /* APIEndpointContractTests.swift */; };
@@ -116,6 +123,7 @@
 		C04700000000000000000001 /* ChatPendingActionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04700000000000000000002 /* ChatPendingActionCoordinator.swift */; };
 		C04800000000000000000001 /* ChatAttachmentCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04800000000000000000002 /* ChatAttachmentCoordinator.swift */; };
 		C04800000000000000000003 /* ChatAttachmentCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04800000000000000000004 /* ChatAttachmentCoordinatorTests.swift */; };
+		C0GATE000000000000000001 /* ChatComposerSendGateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0GATE000000000000000002 /* ChatComposerSendGateTests.swift */; };
 		1A2B3C4D5E6F7000000000AD /* Workspace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F7000000000BD /* Workspace.swift */; };
 		1A2B3C4D5E6F7000000000AE /* ServerCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F7000000000BE /* ServerCatalog.swift */; };
 		1A2B3C4D5E6F7000000000AF /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F7000000000BF /* ChatView.swift */; };
@@ -151,6 +159,8 @@
 		C14300000000000000000001 /* StreamingMarkdownSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C14300000000000000000002 /* StreamingMarkdownSupport.swift */; };
 		C0DE34000000000000000001 /* TranscriptMedia.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE34000000000000000002 /* TranscriptMedia.swift */; };
 		C0DE34000000000000000006 /* TranscriptMediaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE34000000000000000005 /* TranscriptMediaView.swift */; };
+		1F18000000000000000000B2 /* TranscriptMediaImageLightbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F18000000000000000000A2 /* TranscriptMediaImageLightbox.swift */; };
+		1F18000000000000000000B1 /* ImageLightboxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F18000000000000000000A1 /* ImageLightboxView.swift */; };
 		C0DE34000000000000000008 /* TranscriptMediaPreviewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE34000000000000000007 /* TranscriptMediaPreviewViewModel.swift */; };
 		C0DE34000000000000000009 /* TranscriptMediaDataLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE3400000000000000000A /* TranscriptMediaDataLoader.swift */; };
 		C0DE3400000000000000000D /* TranscriptMediaExportSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE3400000000000000000E /* TranscriptMediaExportSupport.swift */; };
@@ -208,6 +218,12 @@
 		1F16000000000000000000B3 /* FileBrowserViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F16000000000000000000F3 /* FileBrowserViewModelTests.swift */; };
 		1F16000000000000000000B2 /* FileTreeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F16000000000000000000F2 /* FileTreeTests.swift */; };
 		1F16000000000000000000B1 /* FileTree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F16000000000000000000F1 /* FileTree.swift */; };
+		1F16000000000000000000B4 /* FileReference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F16000000000000000000F4 /* FileReference.swift */; };
+		1F16000000000000000000B5 /* FileIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F16000000000000000000F5 /* FileIcon.swift */; };
+		1F16000000000000000000B6 /* FileReferenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F16000000000000000000F6 /* FileReferenceTests.swift */; };
+		1F18000000000000000000B4 /* ImageLightboxGesturePolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F18000000000000000000A4 /* ImageLightboxGesturePolicyTests.swift */; };
+		1F18000000000000000000B3 /* TranscriptMarkdownImageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F18000000000000000000A3 /* TranscriptMarkdownImageTests.swift */; };
+		1F16000000000000000000B7 /* FileIconTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F16000000000000000000F7 /* FileIconTests.swift */; };
 		1A2B3C4D5E6F7000000000E8 /* FilePreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F7000000000E9 /* FilePreviewView.swift */; };
 		1A2B3C4D5E6F7000000000EA /* FilePreviewViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F7000000000EB /* FilePreviewViewModel.swift */; };
 		BEEF02600000000000000001 /* FileExportSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEEF02600000000000000002 /* FileExportSupport.swift */; };
@@ -380,6 +396,8 @@
 		8618A9261B8047CEA6084798 /* SlashCommandAutocompleteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC2A37872AC842629FBDDFA4 /* SlashCommandAutocompleteView.swift */; };
 		8B71DA2AAC521382F54A841C /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57B5FD09B6B5937573B5F9A4 /* InsightsView.swift */; };
 		8F63EE9A9B344C4FA579D5A8 /* SlashCommandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0485E1E1FFB64A24BB729CD4 /* SlashCommandTests.swift */; };
+		9F22A768126D503EAFB6D900 /* ComposerFileTriggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFB41BE54A19587EB9037B7B /* ComposerFileTriggerTests.swift */; };
+		063F801939EE5BC0ADD8D7BF /* FilePathSearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E518E24247E5D05AA76D419 /* FilePathSearchTests.swift */; };
 		F06907881C5B4BCCB98D2EBA /* ComposerSlashTriggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92C4B5F1244F4250AD7DB625 /* ComposerSlashTriggerTests.swift */; };
 		A1C0F1000000000000000006 /* ComposerChipTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0F1000000000000000005 /* ComposerChipTests.swift */; };
 		941A67322EB54169A55D7A64 /* SlashCommandCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB43F55AB4F4262963E6A6E /* SlashCommandCatalog.swift */; };
@@ -390,10 +408,14 @@
 		B53F3F24A5C24D9E8E54A810 /* SlashCommandExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D1CE5F12B9E4D4D9E5A01C1 /* SlashCommandExecutor.swift */; };
 		C0CAM000000000000000B001 /* CameraPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0CAM000000000000000B002 /* CameraPickerView.swift */; };
 		C0DEC0DE0000000000000001 /* ChatComposerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEC0DE0000000000000002 /* ChatComposerView.swift */; };
+		C0DEC0DE0000000000000003 /* ChatComposerSendGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEC0DE0000000000000004 /* ChatComposerSendGate.swift */; };
 		D01ECB8354BE43609DB90E77 /* ComposerTextEditing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93ED01E261E647E79540A6AD /* ComposerTextEditing.swift */; };
 		A1C0F1000000000000000002 /* ComposerChipToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0F1000000000000000001 /* ComposerChipToken.swift */; };
 		A1C0F1000000000000000004 /* ComposerChipRendering.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0F1000000000000000003 /* ComposerChipRendering.swift */; };
 		A1C0F1000000000000000008 /* ComposerChipTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0F1000000000000000007 /* ComposerChipTextView.swift */; };
+		D8FC4AB182545360A544E1FB /* ComposerFileTrigger.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDB0B6C20A2A5612B0A3809E /* ComposerFileTrigger.swift */; };
+		2E9A26F315A959719F984023 /* FilePathSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCE470A9851C57608379F9AF /* FilePathSearch.swift */; };
+		CAB298E458D85C9DAC9599EF /* FilePathAutocompleteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73EE08E38F415FF38272C255 /* FilePathAutocompleteView.swift */; };
 		E067C191AC494934863F613D /* ComposerSlashTrigger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 417A680DBE734B64988AC062 /* ComposerSlashTrigger.swift */; };
 		C5A0D8F5502048B6B9258B01 /* InsightsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5A0D8F5502048B6B9258B00 /* InsightsViewModelTests.swift */; };
 		105050000000000000000001 /* ComposerModelPickerSectionExpansionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 105050000000000000000002 /* ComposerModelPickerSectionExpansionState.swift */; };
@@ -445,6 +467,8 @@
 
 /* Begin PBXFileReference section */
 		0485E1E1FFB64A24BB729CD4 /* SlashCommandTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlashCommandTests.swift; sourceTree = "<group>"; };
+		DFB41BE54A19587EB9037B7B /* ComposerFileTriggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerFileTriggerTests.swift; sourceTree = "<group>"; };
+		8E518E24247E5D05AA76D419 /* FilePathSearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilePathSearchTests.swift; sourceTree = "<group>"; };
 		92C4B5F1244F4250AD7DB625 /* ComposerSlashTriggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerSlashTriggerTests.swift; sourceTree = "<group>"; };
 		A1C0F1000000000000000005 /* ComposerChipTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerChipTests.swift; sourceTree = "<group>"; };
 		351C0F1600000000000000A1 /* Shared.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Shared.xcconfig; path = Config/Shared.xcconfig; sourceTree = "<group>"; };
@@ -472,6 +496,12 @@
 		C04000000000000000000013 /* APIClient+Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "APIClient+Chat.swift"; sourceTree = "<group>"; };
 		C04000000000000000000014 /* APIClient+Workspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "APIClient+Workspace.swift"; sourceTree = "<group>"; };
 		C04000000000000000000015 /* APIClient+ServerPanels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "APIClient+ServerPanels.swift"; sourceTree = "<group>"; };
+		C0415A0000000000000001 /* APIClient+ProviderQuota.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "APIClient+ProviderQuota.swift"; sourceTree = "<group>"; };
+		C0415A0000000000000002 /* ProviderLimitsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProviderLimitsCard.swift; sourceTree = "<group>"; };
+		C0415A0000000000000003 /* APIClientProviderQuotaTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClientProviderQuotaTests.swift; sourceTree = "<group>"; };
+		C0415A0000000000000004 /* ProviderLimitCardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProviderLimitCardTests.swift; sourceTree = "<group>"; };
+		C0415A0000000000000005 /* SessionDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDetailsView.swift; sourceTree = "<group>"; };
+		C0415A0000000000000006 /* SessionDetailsViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionDetailsViewModelTests.swift; sourceTree = "<group>"; };
 		C04000000000000000000016 /* APIClient+Cron.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "APIClient+Cron.swift"; sourceTree = "<group>"; };
 		C04000000000000000000017 /* APIClient+Memory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "APIClient+Memory.swift"; sourceTree = "<group>"; };
 		C04000000000000000000018 /* APIClient+Skills.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "APIClient+Skills.swift"; sourceTree = "<group>"; };
@@ -516,6 +546,7 @@
 		C15200000000000000000006 /* OnboardingConnectPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingConnectPage.swift; sourceTree = "<group>"; };
 		C15200000000000000000007 /* OnboardingFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlowTests.swift; sourceTree = "<group>"; };
 		C0390000000000000000000F /* SessionListMutationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionListMutationTests.swift; sourceTree = "<group>"; };
+		C03900000000000000000019 /* SessionRowAttentionStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRowAttentionStateTests.swift; sourceTree = "<group>"; };
 		A10900000000000000000012 /* SessionNavigationStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionNavigationStateTests.swift; sourceTree = "<group>"; };
 		19C1150000000000000000A4 /* CliSessionsSyncModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CliSessionsSyncModelTests.swift; sourceTree = "<group>"; };
 		C03900000000000000000010 /* APIEndpointContractTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIEndpointContractTests.swift; sourceTree = "<group>"; };
@@ -542,6 +573,7 @@
 		C04700000000000000000002 /* ChatPendingActionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatPendingActionCoordinator.swift; sourceTree = "<group>"; };
 		C04800000000000000000002 /* ChatAttachmentCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAttachmentCoordinator.swift; sourceTree = "<group>"; };
 		C04800000000000000000004 /* ChatAttachmentCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatAttachmentCoordinatorTests.swift; sourceTree = "<group>"; };
+		C0GATE000000000000000002 /* ChatComposerSendGateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatComposerSendGateTests.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F7000000000BD /* Workspace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Workspace.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F7000000000BE /* ServerCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerCatalog.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F7000000000BF /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
@@ -577,6 +609,8 @@
 		C14300000000000000000002 /* StreamingMarkdownSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingMarkdownSupport.swift; sourceTree = "<group>"; };
 		C0DE34000000000000000002 /* TranscriptMedia.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptMedia.swift; sourceTree = "<group>"; };
 		C0DE34000000000000000005 /* TranscriptMediaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptMediaView.swift; sourceTree = "<group>"; };
+		1F18000000000000000000A2 /* TranscriptMediaImageLightbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptMediaImageLightbox.swift; sourceTree = "<group>"; };
+		1F18000000000000000000A1 /* ImageLightboxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLightboxView.swift; sourceTree = "<group>"; };
 		C0DE34000000000000000007 /* TranscriptMediaPreviewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptMediaPreviewViewModel.swift; sourceTree = "<group>"; };
 		C0DE3400000000000000000A /* TranscriptMediaDataLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptMediaDataLoader.swift; sourceTree = "<group>"; };
 		C0DE3400000000000000000E /* TranscriptMediaExportSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptMediaExportSupport.swift; sourceTree = "<group>"; };
@@ -634,6 +668,12 @@
 		1F16000000000000000000F3 /* FileBrowserViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileBrowserViewModelTests.swift; sourceTree = "<group>"; };
 		1F16000000000000000000F2 /* FileTreeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileTreeTests.swift; sourceTree = "<group>"; };
 		1F16000000000000000000F1 /* FileTree.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileTree.swift; sourceTree = "<group>"; };
+		1F16000000000000000000F4 /* FileReference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileReference.swift; sourceTree = "<group>"; };
+		1F16000000000000000000F5 /* FileIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileIcon.swift; sourceTree = "<group>"; };
+		1F16000000000000000000F6 /* FileReferenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileReferenceTests.swift; sourceTree = "<group>"; };
+		1F18000000000000000000A4 /* ImageLightboxGesturePolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLightboxGesturePolicyTests.swift; sourceTree = "<group>"; };
+		1F18000000000000000000A3 /* TranscriptMarkdownImageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptMarkdownImageTests.swift; sourceTree = "<group>"; };
+		1F16000000000000000000F7 /* FileIconTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileIconTests.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F7000000000E9 /* FilePreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilePreviewView.swift; sourceTree = "<group>"; };
 		1A2B3C4D5E6F7000000000EB /* FilePreviewViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilePreviewViewModel.swift; sourceTree = "<group>"; };
 		BEEF02600000000000000002 /* FileExportSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileExportSupport.swift; sourceTree = "<group>"; };
@@ -822,10 +862,14 @@
 		A04500000000000000000018 /* LiveActivityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveActivityTests.swift; sourceTree = "<group>"; };
 		C0CAM000000000000000B002 /* CameraPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPickerView.swift; sourceTree = "<group>"; };
 		C0DEC0DE0000000000000002 /* ChatComposerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatComposerView.swift; sourceTree = "<group>"; };
+		C0DEC0DE0000000000000004 /* ChatComposerSendGate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatComposerSendGate.swift; sourceTree = "<group>"; };
 		93ED01E261E647E79540A6AD /* ComposerTextEditing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerTextEditing.swift; sourceTree = "<group>"; };
 		A1C0F1000000000000000001 /* ComposerChipToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerChipToken.swift; sourceTree = "<group>"; };
 		A1C0F1000000000000000003 /* ComposerChipRendering.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerChipRendering.swift; sourceTree = "<group>"; };
 		A1C0F1000000000000000007 /* ComposerChipTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerChipTextView.swift; sourceTree = "<group>"; };
+		BDB0B6C20A2A5612B0A3809E /* ComposerFileTrigger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerFileTrigger.swift; sourceTree = "<group>"; };
+		BCE470A9851C57608379F9AF /* FilePathSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilePathSearch.swift; sourceTree = "<group>"; };
+		73EE08E38F415FF38272C255 /* FilePathAutocompleteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilePathAutocompleteView.swift; sourceTree = "<group>"; };
 		417A680DBE734B64988AC062 /* ComposerSlashTrigger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerSlashTrigger.swift; sourceTree = "<group>"; };
 		C5A0D8F5502048B6B9258B00 /* InsightsViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsViewModelTests.swift; sourceTree = "<group>"; };
 		FC2A37872AC842629FBDDFA4 /* SlashCommandAutocompleteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlashCommandAutocompleteView.swift; sourceTree = "<group>"; };
@@ -965,11 +1009,13 @@
 					C04100000000000000000004 /* ChatComposerConfigLoaderTests.swift */,
 					C04600000000000000000004 /* ChatStreamCoordinatorTests.swift */,
 					C04800000000000000000004 /* ChatAttachmentCoordinatorTests.swift */,
+					C0GATE000000000000000002 /* ChatComposerSendGateTests.swift */,
 					C0390000000000000000000E /* ChatViewModelSendTests.swift */,
 					C0DED00000000000000DE000 /* ChatViewModelMergeDedupTests.swift */,
 					C14600000000000000000001 /* ChatToolbarHeaderTests.swift */,
 					C15200000000000000000007 /* OnboardingFlowTests.swift */,
 				C0390000000000000000000F /* SessionListMutationTests.swift */,
+				C03900000000000000000019 /* SessionRowAttentionStateTests.swift */,
 				A10900000000000000000012 /* SessionNavigationStateTests.swift */,
 				19C1150000000000000000A4 /* CliSessionsSyncModelTests.swift */,
 				C03900000000000000000010 /* APIEndpointContractTests.swift */,
@@ -1013,6 +1059,10 @@
 				1D1FF0000000000000000F21 /* ReviewDiffCanvasViewTests.swift */,
 				1D1FF0000000000000000F34 /* SourceFileRowsTests.swift */,
 				1F16000000000000000000F2 /* FileTreeTests.swift */,
+				1F16000000000000000000F6 /* FileReferenceTests.swift */,
+				1F18000000000000000000A4 /* ImageLightboxGesturePolicyTests.swift */,
+				1F18000000000000000000A3 /* TranscriptMarkdownImageTests.swift */,
+				1F16000000000000000000F7 /* FileIconTests.swift */,
 				1F16000000000000000000F3 /* FileBrowserViewModelTests.swift */,
 				1D1FF0000000000000000F35 /* SourceHighlighterTests.swift */,
 				1D1FF0000000000000000F36 /* SourceFileViewModelTests.swift */,
@@ -1038,11 +1088,16 @@
 				C0369000000000000000006 /* CronJobEditorConfigurationTests.swift */,
 				1050500000000000000000B2 /* OnboardingViewModelIdentityTests.swift */,
 				0485E1E1FFB64A24BB729CD4 /* SlashCommandTests.swift */,
+				DFB41BE54A19587EB9037B7B /* ComposerFileTriggerTests.swift */,
+				8E518E24247E5D05AA76D419 /* FilePathSearchTests.swift */,
 				92C4B5F1244F4250AD7DB625 /* ComposerSlashTriggerTests.swift */,
 				A1C0F1000000000000000005 /* ComposerChipTests.swift */,
 				6809B8F1391248A4AA77C453 /* SlashCommandExecutorTests.swift */,
 				A710739233F64F4FA4C2B711 /* ComposerVoiceDraftComposerTests.swift */,
 				C5A0D8F5502048B6B9258B00 /* InsightsViewModelTests.swift */,
+				C0415A0000000000000004 /* ProviderLimitCardTests.swift */,
+				C0415A0000000000000003 /* APIClientProviderQuotaTests.swift */,
+				C0415A0000000000000006 /* SessionDetailsViewModelTests.swift */,
 				2BE8F2B38F094C4C9EB18300 /* SkillsViewModelTests.swift */,
 				26AB000000000000000000F3 /* APIClientProvidersTests.swift */,
 				26AB000000000000000000F4 /* ProvidersViewModelTests.swift */,
@@ -1082,6 +1137,7 @@
 				C04000000000000000000014 /* APIClient+Workspace.swift */,
 				C03120000000000000F002 /* APIClient+Git.swift */,
 				C04000000000000000000015 /* APIClient+ServerPanels.swift */,
+				C0415A0000000000000001 /* APIClient+ProviderQuota.swift */,
 				C04000000000000000000016 /* APIClient+Cron.swift */,
 				C04000000000000000000017 /* APIClient+Memory.swift */,
 				C04000000000000000000018 /* APIClient+Skills.swift */,
@@ -1210,6 +1266,7 @@
 				C08800000000000000000002 /* SessionHaptics.swift */,
 				A040C0DE0000000000000002 /* ProjectCreationSheet.swift */,
 				A048C0DE0000000000000002 /* SessionRenameSheet.swift */,
+				C0415A0000000000000005 /* SessionDetailsView.swift */,
 			);
 			path = SessionList;
 			sourceTree = "<group>";
@@ -1224,10 +1281,14 @@
 				C05100000000000000000014 /* ChatTranscriptSupportingViews.swift */,
 				C0CAM000000000000000B002 /* CameraPickerView.swift */,
 				C0DEC0DE0000000000000002 /* ChatComposerView.swift */,
+				C0DEC0DE0000000000000004 /* ChatComposerSendGate.swift */,
 				93ED01E261E647E79540A6AD /* ComposerTextEditing.swift */,
 				A1C0F1000000000000000001 /* ComposerChipToken.swift */,
 				A1C0F1000000000000000003 /* ComposerChipRendering.swift */,
 				A1C0F1000000000000000007 /* ComposerChipTextView.swift */,
+				BDB0B6C20A2A5612B0A3809E /* ComposerFileTrigger.swift */,
+				BCE470A9851C57608379F9AF /* FilePathSearch.swift */,
+				73EE08E38F415FF38272C255 /* FilePathAutocompleteView.swift */,
 				417A680DBE734B64988AC062 /* ComposerSlashTrigger.swift */,
 				C05000000000000000000002 /* ChatComposerAttachmentStripView.swift */,
 				C04900000000000000000002 /* ChatComposerTextInputView.swift */,
@@ -1269,6 +1330,8 @@
 				C14300000000000000000002 /* StreamingMarkdownSupport.swift */,
 				C0DE34000000000000000002 /* TranscriptMedia.swift */,
 				C0DE34000000000000000005 /* TranscriptMediaView.swift */,
+				1F18000000000000000000A2 /* TranscriptMediaImageLightbox.swift */,
+				1F18000000000000000000A1 /* ImageLightboxView.swift */,
 				C0DE34000000000000000007 /* TranscriptMediaPreviewViewModel.swift */,
 				C0DE3400000000000000000A /* TranscriptMediaDataLoader.swift */,
 				C0DE3400000000000000000E /* TranscriptMediaExportSupport.swift */,
@@ -1332,6 +1395,8 @@
 				1A2B3C4D5E6F7000000000E5 /* FileBrowserView.swift */,
 				1A2B3C4D5E6F7000000000E7 /* FileBrowserViewModel.swift */,
 				1F16000000000000000000F1 /* FileTree.swift */,
+				1F16000000000000000000F4 /* FileReference.swift */,
+				1F16000000000000000000F5 /* FileIcon.swift */,
 				1A2B3C4D5E6F7000000000E9 /* FilePreviewView.swift */,
 				1A2B3C4D5E6F7000000000EB /* FilePreviewViewModel.swift */,
 				BEEF02600000000000000002 /* FileExportSupport.swift */,
@@ -1507,6 +1572,7 @@
 				C0DE512E00000000000002205 /* UsageChartData.swift */,
 				C0DE512E00000000000002207 /* UsageChartCard.swift */,
 				C0DE512E00000000000002209 /* UsageTotalsGrid.swift */,
+				C0415A0000000000000002 /* ProviderLimitsCard.swift */,
 				C0DE512E0000000000000220B /* UsageModelRows.swift */,
 				931EC010A2D940B0E42287A4 /* InsightsViewModel.swift */,
 			);
@@ -1749,6 +1815,7 @@
 				1D1FF0000000000000000B33 /* SourceFileSurface.swift in Sources */,
 				C03140000000000000B001 /* GitBranchPickerView.swift in Sources */,
 				C04000000000000000000005 /* APIClient+ServerPanels.swift in Sources */,
+				C0415B0000000000000001 /* APIClient+ProviderQuota.swift in Sources */,
 				C04000000000000000000006 /* APIClient+Cron.swift in Sources */,
 				C04000000000000000000007 /* APIClient+Memory.swift in Sources */,
 				C04000000000000000000008 /* APIClient+Skills.swift in Sources */,
@@ -1822,10 +1889,14 @@
 					C05100000000000000000004 /* ChatTranscriptSupportingViews.swift in Sources */,
 					C0CAM000000000000000B001 /* CameraPickerView.swift in Sources */,
 				C0DEC0DE0000000000000001 /* ChatComposerView.swift in Sources */,
+				C0DEC0DE0000000000000003 /* ChatComposerSendGate.swift in Sources */,
 				D01ECB8354BE43609DB90E77 /* ComposerTextEditing.swift in Sources */,
 				A1C0F1000000000000000002 /* ComposerChipToken.swift in Sources */,
 				A1C0F1000000000000000004 /* ComposerChipRendering.swift in Sources */,
 				A1C0F1000000000000000008 /* ComposerChipTextView.swift in Sources */,
+				D8FC4AB182545360A544E1FB /* ComposerFileTrigger.swift in Sources */,
+				2E9A26F315A959719F984023 /* FilePathSearch.swift in Sources */,
+				CAB298E458D85C9DAC9599EF /* FilePathAutocompleteView.swift in Sources */,
 				E067C191AC494934863F613D /* ComposerSlashTrigger.swift in Sources */,
 					C05000000000000000000001 /* ChatComposerAttachmentStripView.swift in Sources */,
 					C04900000000000000000001 /* ChatComposerTextInputView.swift in Sources */,
@@ -1860,6 +1931,8 @@
 				1A2B3C4D5E6F7000000000E4 /* FileBrowserView.swift in Sources */,
 				1A2B3C4D5E6F7000000000E6 /* FileBrowserViewModel.swift in Sources */,
 				1F16000000000000000000B1 /* FileTree.swift in Sources */,
+				1F16000000000000000000B4 /* FileReference.swift in Sources */,
+				1F16000000000000000000B5 /* FileIcon.swift in Sources */,
 				1A2B3C4D5E6F7000000000E8 /* FilePreviewView.swift in Sources */,
 				1A2B3C4D5E6F7000000000EA /* FilePreviewViewModel.swift in Sources */,
 				BEEF02600000000000000001 /* FileExportSupport.swift in Sources */,
@@ -1867,6 +1940,8 @@
 				C14300000000000000000001 /* StreamingMarkdownSupport.swift in Sources */,
 				C0DE34000000000000000001 /* TranscriptMedia.swift in Sources */,
 				C0DE34000000000000000006 /* TranscriptMediaView.swift in Sources */,
+				1F18000000000000000000B2 /* TranscriptMediaImageLightbox.swift in Sources */,
+				1F18000000000000000000B1 /* ImageLightboxView.swift in Sources */,
 				C0DE34000000000000000008 /* TranscriptMediaPreviewViewModel.swift in Sources */,
 				C0DE34000000000000000009 /* TranscriptMediaDataLoader.swift in Sources */,
 				C0DE3400000000000000000D /* TranscriptMediaExportSupport.swift in Sources */,
@@ -1948,7 +2023,9 @@
 				C0DE512E00000000000002206 /* UsageChartData.swift in Sources */,
 				C0DE512E00000000000002208 /* UsageChartCard.swift in Sources */,
 				C0DE512E0000000000000220A /* UsageTotalsGrid.swift in Sources */,
+				C0415B0000000000000002 /* ProviderLimitsCard.swift in Sources */,
 				C0DE512E0000000000000220C /* UsageModelRows.swift in Sources */,
+				C0415B0000000000000005 /* SessionDetailsView.swift in Sources */,
 				05814DEA5DE4690F730B1E15 /* InsightsViewModel.swift in Sources */,
 				26AB000000000000000000B1 /* ProvidersViewModel.swift in Sources */,
 				26AB000000000000000000B2 /* ProvidersView.swift in Sources */,
@@ -1989,11 +2066,13 @@
 					C04100000000000000000003 /* ChatComposerConfigLoaderTests.swift in Sources */,
 					C04600000000000000000003 /* ChatStreamCoordinatorTests.swift in Sources */,
 					C04800000000000000000003 /* ChatAttachmentCoordinatorTests.swift in Sources */,
+					C0GATE000000000000000001 /* ChatComposerSendGateTests.swift in Sources */,
 					C0391000000000000000000E /* ChatViewModelSendTests.swift in Sources */,
 					C0DED00000000000000DE001 /* ChatViewModelMergeDedupTests.swift in Sources */,
 					C14600000000000000000002 /* ChatToolbarHeaderTests.swift in Sources */,
 					C15210000000000000000007 /* OnboardingFlowTests.swift in Sources */,
 				C0391000000000000000000F /* SessionListMutationTests.swift in Sources */,
+				C03910000000000000000019 /* SessionRowAttentionStateTests.swift in Sources */,
 				A10900000000000000000002 /* SessionNavigationStateTests.swift in Sources */,
 				19C1150000000000000000A3 /* CliSessionsSyncModelTests.swift in Sources */,
 				C03910000000000000000010 /* APIEndpointContractTests.swift in Sources */,
@@ -2037,6 +2116,10 @@
 				1D1FF0000000000000000B21 /* ReviewDiffCanvasViewTests.swift in Sources */,
 				1D1FF0000000000000000B34 /* SourceFileRowsTests.swift in Sources */,
 				1F16000000000000000000B2 /* FileTreeTests.swift in Sources */,
+				1F16000000000000000000B6 /* FileReferenceTests.swift in Sources */,
+				1F18000000000000000000B4 /* ImageLightboxGesturePolicyTests.swift in Sources */,
+				1F18000000000000000000B3 /* TranscriptMarkdownImageTests.swift in Sources */,
+				1F16000000000000000000B7 /* FileIconTests.swift in Sources */,
 				1F16000000000000000000B3 /* FileBrowserViewModelTests.swift in Sources */,
 				1D1FF0000000000000000B35 /* SourceHighlighterTests.swift in Sources */,
 				1D1FF0000000000000000B36 /* SourceFileViewModelTests.swift in Sources */,
@@ -2062,11 +2145,16 @@
 					C0369000000000000000005 /* CronJobEditorConfigurationTests.swift in Sources */,
 					1050500000000000000000B1 /* OnboardingViewModelIdentityTests.swift in Sources */,
 					8F63EE9A9B344C4FA579D5A8 /* SlashCommandTests.swift in Sources */,
+				9F22A768126D503EAFB6D900 /* ComposerFileTriggerTests.swift in Sources */,
+				063F801939EE5BC0ADD8D7BF /* FilePathSearchTests.swift in Sources */,
 				F06907881C5B4BCCB98D2EBA /* ComposerSlashTriggerTests.swift in Sources */,
 				A1C0F1000000000000000006 /* ComposerChipTests.swift in Sources */,
 				0D82B28493C6401D98DA9C0E /* SlashCommandExecutorTests.swift in Sources */,
 				A710739233F64F4FA4C2B701 /* ComposerVoiceDraftComposerTests.swift in Sources */,
 				C5A0D8F5502048B6B9258B01 /* InsightsViewModelTests.swift in Sources */,
+				C0415B0000000000000004 /* ProviderLimitCardTests.swift in Sources */,
+				C0415B0000000000000003 /* APIClientProviderQuotaTests.swift in Sources */,
+				C0415B0000000000000006 /* SessionDetailsViewModelTests.swift in Sources */,
 				2BE8F2B38F094C4C9EB18301 /* SkillsViewModelTests.swift in Sources */,
 				26AB000000000000000000B3 /* APIClientProvidersTests.swift in Sources */,
 				26AB000000000000000000B4 /* ProvidersViewModelTests.swift in Sources */,
@@ -2273,7 +2361,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -2302,7 +2390,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -2327,7 +2415,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER).tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -2351,7 +2439,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER).tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -2377,7 +2465,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER).shareextension";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -2405,7 +2493,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER).shareextension";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -2432,7 +2520,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER).liveactivitywidget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -2459,7 +2547,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = "$(APP_BUNDLE_IDENTIFIER).liveactivitywidget";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

@@ -13,6 +13,8 @@ struct SessionListRowActions {
     let createProject: (SessionSummary) -> Void
     let refreshProjects: () -> Void
     let export: (SessionSummary, SessionExportFormat) -> Void
+    /// Per-session read details (tracker item 2): usage now, more reads later.
+    let showDetails: (SessionSummary) -> Void
 }
 
 enum SessionRowActionPolicy {
@@ -532,6 +534,7 @@ struct SessionInteractiveRow: View {
                 showsMessageCount: showsMessageCount,
                 showsWorkspace: showsWorkspace,
                 isViewingCachedData: viewModel.isViewingCachedData,
+                attentionState: viewModel.attentionState(for: session),
                 searchExcerpt: viewModel.searchExcerpt(for: session, searchText: searchText)
             )
         }
@@ -770,6 +773,13 @@ struct SessionRowContextMenu: View {
             } label: {
                 Label("Copy Full Title", systemImage: "doc.on.doc")
             }
+
+            Button {
+                actions.showDetails(session)
+            } label: {
+                Label("Session Details", systemImage: "info.circle")
+            }
+            .disabled(isViewingCachedData || session.sessionId == nil)
         }
 
         if SessionRowActionPolicy.offersMutationActions(for: session) {

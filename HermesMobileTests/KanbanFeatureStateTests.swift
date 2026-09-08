@@ -700,6 +700,60 @@ final class KanbanFeatureStateTests: XCTestCase {
         XCTAssertFalse(KanbanDispatcherPresentation.hasResult(state.dispatchState))
     }
 
+    func testHeaderOverflowIconTracksActiveFilters() {
+        XCTAssertEqual(
+            KanbanHeaderPresentation.overflowSystemImage(hasActiveFilters: false),
+            "ellipsis.circle"
+        )
+        XCTAssertEqual(
+            KanbanHeaderPresentation.overflowSystemImage(hasActiveFilters: true),
+            "ellipsis.circle.fill",
+            "More stays filled while a filter is applied, because Card Filters now lives inside it."
+        )
+        XCTAssertEqual(
+            KanbanHeaderPresentation.cardFiltersSystemImage(hasActiveFilters: false),
+            "line.3.horizontal.decrease.circle"
+        )
+        XCTAssertEqual(
+            KanbanHeaderPresentation.cardFiltersSystemImage(hasActiveFilters: true),
+            "line.3.horizontal.decrease.circle.fill"
+        )
+    }
+
+    func testBoardPickerWidthCapLeavesRoomForTheBarsOtherControls() {
+        // iPhone 17 at the default text size: 402 - 72 (back button side) - 196
+        // (168pt pill + 28pt of margin and gap).
+        XCTAssertEqual(
+            KanbanHeaderPresentation.boardPickerMaxWidth(barWidth: 402, trailingGroupWidth: 168),
+            134,
+            accuracy: 0.001
+        )
+        XCTAssertEqual(
+            KanbanHeaderPresentation.boardPickerMaxWidth(barWidth: 0, trailingGroupWidth: 168),
+            80,
+            accuracy: 0.001,
+            "Before the first layout pass the cap falls back to the 80pt floor."
+        )
+        XCTAssertEqual(
+            KanbanHeaderPresentation.boardPickerMaxWidth(barWidth: 375, trailingGroupWidth: 168),
+            107,
+            accuracy: 0.001,
+            "The narrowest supported bar still leaves a tappable picker."
+        )
+        XCTAssertEqual(
+            KanbanHeaderPresentation.boardPickerMaxWidth(barWidth: 402, trailingGroupWidth: 168 * 2.3),
+            80,
+            accuracy: 0.001,
+            "An accessibility text size is clamped to 1.4x the pill, leaving 66.8pt, so the floor wins."
+        )
+        XCTAssertEqual(
+            KanbanHeaderPresentation.boardPickerMaxWidth(barWidth: 430, trailingGroupWidth: 168),
+            162,
+            accuracy: 0.001,
+            "A wider bar spends the extra width on the picker."
+        )
+    }
+
     func testRunDispatcherJoinsBoardWideLockAndAlwaysReconcilesWithoutRequiringPreview() async {
         let multipleBoards: KanbanBoardsResponse = mutationDecode(
             #"{"boards":[{"slug":"main"},{"slug":"release"}],"current":"main","read_only":false}"#

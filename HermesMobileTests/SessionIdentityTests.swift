@@ -83,7 +83,7 @@ final class SessionIdentityTests: XCTestCase {
         XCTAssertNil(SessionRowView.metadataLabel(for: session, showsMessageCount: false, showsWorkspace: false))
     }
 
-    func testSessionRowAccessibilityStateLabelsIncludeStreamingPinnedAndCachedState() {
+    func testSessionRowAccessibilityStateLabelsIncludeAttentionPinnedAndCachedState() {
         let session = SessionSummary(
             sessionId: "stateful",
             pinned: true,
@@ -91,9 +91,15 @@ final class SessionIdentityTests: XCTestCase {
             isStreaming: false
         )
 
+        // Cached rows say nothing about attention: the stream fields in a
+        // cached summary are as old as the cache.
         XCTAssertEqual(
             SessionRowView.accessibilityStateLabels(for: session, isViewingCachedData: true),
-            ["Streaming", "Pinned", "Cached"]
+            ["Pinned", "Cached"]
+        )
+        XCTAssertEqual(
+            SessionRowView.accessibilityStateLabels(for: session, isViewingCachedData: false),
+            ["Working", "Pinned"]
         )
         XCTAssertEqual(
             SessionRowView.accessibilityStateLabels(for: SessionSummary(sessionId: "plain"), isViewingCachedData: false),

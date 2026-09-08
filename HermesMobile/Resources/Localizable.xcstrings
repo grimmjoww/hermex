@@ -129890,6 +129890,2878 @@
           }
         }
       }
+    },
+    "Searching files…" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "جارٍ البحث في الملفات…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dateien werden durchsucht…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Buscando archivos…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Recherche de fichiers…"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "מחפש קבצים…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ricerca file…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ファイルを検索中…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "파일 검색 중…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bestanden zoeken…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyszukiwanie plików…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Buscando arquivos…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Поиск файлов…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dosyalar aranıyor…"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "فائلیں تلاش کی جا رہی ہیں…"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "正在搜尋檔案…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "正在搜索文件…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "正在搜尋檔案…"
+          }
+        }
+      }
+    },
+    "No matching files or folders." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "لا توجد ملفات أو مجلدات مطابقة."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Keine passenden Dateien oder Ordner."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No hay archivos ni carpetas que coincidan."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aucun fichier ou dossier correspondant."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "אין קבצים או תיקיות תואמים."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nessun file o cartella corrispondente."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "一致するファイルまたはフォルダがありません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "일치하는 파일 또는 폴더가 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Geen overeenkomende bestanden of mappen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak pasujących plików ani folderów."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nenhum arquivo ou pasta correspondente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Нет подходящих файлов или папок."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Eşleşen dosya veya klasör yok."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "کوئی مماثل فائل یا فولڈر نہیں۔"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "沒有相符的檔案或資料夾。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "没有匹配的文件或文件夹。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "沒有相符的檔案或資料夾。"
+          }
+        }
+      }
+    },
+    "Approval" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "موافقة"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Genehmigung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aprobación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Approbation"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "אישור"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Approvazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "承認"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "승인"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Goedkeuring"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zatwierdzenie"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aprovação"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Подтверждение"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Onay"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "منظوری"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "批准"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "批准"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "核准"
+          }
+        }
+      }
+    },
+    "Needs input" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "يحتاج إلى مدخلات"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Eingabe erforderlich"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Necesita información"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Saisie requise"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "נדרש קלט"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Richiede input"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "入力が必要"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "입력 필요"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Invoer vereist"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wymaga danych wejściowych"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Precisa de entrada"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Требуется ввод"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Girdi gerekiyor"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "اِن پٹ درکار ہے"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "需要輸入"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "需要输入"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "需要輸入"
+          }
+        }
+      }
+    },
+    "Working" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "يعمل"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Arbeitet"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trabajando"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En cours"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "עובד"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Al lavoro"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "作業中"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "작업 중"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bezig"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pracuje"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trabalhando"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Работает"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Çalışıyor"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "کام جاری ہے"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "工作中"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "工作中"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "工作中"
+          }
+        }
+      }
+    },
+    "More" : { "localizations" : { "de" : { "stringUnit" : { "state" : "needs_review", "value" : "Mehr" } }, "es" : { "stringUnit" : { "state" : "needs_review", "value" : "Más" } }, "fr" : { "stringUnit" : { "state" : "needs_review", "value" : "Plus" } }, "it" : { "stringUnit" : { "state" : "needs_review", "value" : "Altro" } }, "pl" : { "stringUnit" : { "state" : "needs_review", "value" : "Więcej" } }, "pt-BR" : { "stringUnit" : { "state" : "needs_review", "value" : "Mais" } }, "nl" : { "stringUnit" : { "state" : "needs_review", "value" : "Meer" } }, "tr" : { "stringUnit" : { "state" : "needs_review", "value" : "Diğer" } }, "ru" : { "stringUnit" : { "state" : "needs_review", "value" : "Ещё" } }, "ja" : { "stringUnit" : { "state" : "needs_review", "value" : "その他" } }, "zh-Hans" : { "stringUnit" : { "state" : "needs_review", "value" : "更多" } }, "ko" : { "stringUnit" : { "state" : "needs_review", "value" : "더 보기" } }, "ar" : { "stringUnit" : { "state" : "needs_review", "value" : "المزيد" } }, "he" : { "stringUnit" : { "state" : "needs_review", "value" : "עוד" } }, "ur" : { "stringUnit" : { "state" : "needs_review", "value" : "مزید" } }, "zh-Hant" : { "stringUnit" : { "state" : "needs_review", "value" : "更多" } }, "zh-HK" : { "stringUnit" : { "state" : "needs_review", "value" : "更多" } } } },
+    "Card Filters" : { "localizations" : { "de" : { "stringUnit" : { "state" : "needs_review", "value" : "Kartenfilter" } }, "es" : { "stringUnit" : { "state" : "needs_review", "value" : "Filtros de tarjetas" } }, "fr" : { "stringUnit" : { "state" : "needs_review", "value" : "Filtres de cartes" } }, "it" : { "stringUnit" : { "state" : "needs_review", "value" : "Filtri schede" } }, "pl" : { "stringUnit" : { "state" : "needs_review", "value" : "Filtry kart" } }, "pt-BR" : { "stringUnit" : { "state" : "needs_review", "value" : "Filtros de cartões" } }, "nl" : { "stringUnit" : { "state" : "needs_review", "value" : "Kaartfilters" } }, "tr" : { "stringUnit" : { "state" : "needs_review", "value" : "Kart Filtreleri" } }, "ru" : { "stringUnit" : { "state" : "needs_review", "value" : "Фильтры карточек" } }, "ja" : { "stringUnit" : { "state" : "needs_review", "value" : "カードフィルタ" } }, "zh-Hans" : { "stringUnit" : { "state" : "needs_review", "value" : "卡片筛选条件" } }, "ko" : { "stringUnit" : { "state" : "needs_review", "value" : "카드 필터" } }, "ar" : { "stringUnit" : { "state" : "needs_review", "value" : "عوامل تصفية البطاقات" } }, "he" : { "stringUnit" : { "state" : "needs_review", "value" : "מסנני כרטיסים" } }, "ur" : { "stringUnit" : { "state" : "needs_review", "value" : "کارڈ فلٹرز" } }, "zh-Hant" : { "stringUnit" : { "state" : "needs_review", "value" : "卡片篩選條件" } }, "zh-HK" : { "stringUnit" : { "state" : "needs_review", "value" : "卡片篩選條件" } } } },
+    "Limits" : {"localizations" : {"de" : {"stringUnit" : {"state" : "needs_review", "value" : "Limits"}}, "es" : {"stringUnit" : {"state" : "needs_review", "value" : "Límites"}}, "fr" : {"stringUnit" : {"state" : "needs_review", "value" : "Limites"}}, "it" : {"stringUnit" : {"state" : "needs_review", "value" : "Limiti"}}, "pl" : {"stringUnit" : {"state" : "needs_review", "value" : "Limity"}}, "pt-BR" : {"stringUnit" : {"state" : "needs_review", "value" : "Limites"}}, "nl" : {"stringUnit" : {"state" : "needs_review", "value" : "Limieten"}}, "tr" : {"stringUnit" : {"state" : "needs_review", "value" : "Limitler"}}, "ru" : {"stringUnit" : {"state" : "needs_review", "value" : "Лимиты"}}, "ja" : {"stringUnit" : {"state" : "needs_review", "value" : "上限"}}, "zh-Hans" : {"stringUnit" : {"state" : "needs_review", "value" : "额度"}}, "ko" : {"stringUnit" : {"state" : "needs_review", "value" : "한도"}}, "ar" : {"stringUnit" : {"state" : "needs_review", "value" : "الحدود"}}, "he" : {"stringUnit" : {"state" : "needs_review", "value" : "מגבלות"}}, "ur" : {"stringUnit" : {"state" : "needs_review", "value" : "حدود"}}, "zh-Hant" : {"stringUnit" : {"state" : "needs_review", "value" : "額度"}}, "zh-HK" : {"stringUnit" : {"state" : "needs_review", "value" : "額度"}}}},
+    "Credits" : {"localizations" : {"de" : {"stringUnit" : {"state" : "needs_review", "value" : "Guthaben"}}, "es" : {"stringUnit" : {"state" : "needs_review", "value" : "Créditos"}}, "fr" : {"stringUnit" : {"state" : "needs_review", "value" : "Crédits"}}, "it" : {"stringUnit" : {"state" : "needs_review", "value" : "Crediti"}}, "pl" : {"stringUnit" : {"state" : "needs_review", "value" : "Środki"}}, "pt-BR" : {"stringUnit" : {"state" : "needs_review", "value" : "Créditos"}}, "nl" : {"stringUnit" : {"state" : "needs_review", "value" : "Tegoed"}}, "tr" : {"stringUnit" : {"state" : "needs_review", "value" : "Kredi"}}, "ru" : {"stringUnit" : {"state" : "needs_review", "value" : "Кредиты"}}, "ja" : {"stringUnit" : {"state" : "needs_review", "value" : "クレジット"}}, "zh-Hans" : {"stringUnit" : {"state" : "needs_review", "value" : "额度余额"}}, "ko" : {"stringUnit" : {"state" : "needs_review", "value" : "크레딧"}}, "ar" : {"stringUnit" : {"state" : "needs_review", "value" : "الرصيد"}}, "he" : {"stringUnit" : {"state" : "needs_review", "value" : "יתרה"}}, "ur" : {"stringUnit" : {"state" : "needs_review", "value" : "کریڈٹس"}}, "zh-Hant" : {"stringUnit" : {"state" : "needs_review", "value" : "額度餘額"}}, "zh-HK" : {"stringUnit" : {"state" : "needs_review", "value" : "額度餘額"}}}},
+    "Resets soon" : {"localizations" : {"de" : {"stringUnit" : {"state" : "needs_review", "value" : "Wird bald zurückgesetzt"}}, "es" : {"stringUnit" : {"state" : "needs_review", "value" : "Se restablece pronto"}}, "fr" : {"stringUnit" : {"state" : "needs_review", "value" : "Réinitialisation imminente"}}, "it" : {"stringUnit" : {"state" : "needs_review", "value" : "Si azzera a breve"}}, "pl" : {"stringUnit" : {"state" : "needs_review", "value" : "Wkrótce zostanie zresetowany"}}, "pt-BR" : {"stringUnit" : {"state" : "needs_review", "value" : "Redefine em breve"}}, "nl" : {"stringUnit" : {"state" : "needs_review", "value" : "Wordt binnenkort gereset"}}, "tr" : {"stringUnit" : {"state" : "needs_review", "value" : "Yakında sıfırlanacak"}}, "ru" : {"stringUnit" : {"state" : "needs_review", "value" : "Скоро сбросится"}}, "ja" : {"stringUnit" : {"state" : "needs_review", "value" : "まもなくリセット"}}, "zh-Hans" : {"stringUnit" : {"state" : "needs_review", "value" : "即将重置"}}, "ko" : {"stringUnit" : {"state" : "needs_review", "value" : "곧 초기화됨"}}, "ar" : {"stringUnit" : {"state" : "needs_review", "value" : "تتم إعادة التعيين قريبًا"}}, "he" : {"stringUnit" : {"state" : "needs_review", "value" : "יתאפס בקרוב"}}, "ur" : {"stringUnit" : {"state" : "needs_review", "value" : "جلد ری سیٹ ہوگا"}}, "zh-Hant" : {"stringUnit" : {"state" : "needs_review", "value" : "即將重設"}}, "zh-HK" : {"stringUnit" : {"state" : "needs_review", "value" : "即將重設"}}}},
+    "Resets in %@" : {"localizations" : {"de" : {"stringUnit" : {"state" : "needs_review", "value" : "Zurücksetzung in %@"}}, "es" : {"stringUnit" : {"state" : "needs_review", "value" : "Se restablece en %@"}}, "fr" : {"stringUnit" : {"state" : "needs_review", "value" : "Réinitialisation dans %@"}}, "it" : {"stringUnit" : {"state" : "needs_review", "value" : "Si azzera tra %@"}}, "pl" : {"stringUnit" : {"state" : "needs_review", "value" : "Reset za %@"}}, "pt-BR" : {"stringUnit" : {"state" : "needs_review", "value" : "Redefine em %@"}}, "nl" : {"stringUnit" : {"state" : "needs_review", "value" : "Reset over %@"}}, "tr" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ sonra sıfırlanır"}}, "ru" : {"stringUnit" : {"state" : "needs_review", "value" : "Сброс через %@"}}, "ja" : {"stringUnit" : {"state" : "needs_review", "value" : "%@後にリセット"}}, "zh-Hans" : {"stringUnit" : {"state" : "needs_review", "value" : "%@后重置"}}, "ko" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ 후 초기화"}}, "ar" : {"stringUnit" : {"state" : "needs_review", "value" : "تتم إعادة التعيين خلال %@"}}, "he" : {"stringUnit" : {"state" : "needs_review", "value" : "מתאפס בעוד %@"}}, "ur" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ میں ری سیٹ ہوگا"}}, "zh-Hant" : {"stringUnit" : {"state" : "needs_review", "value" : "%@後重設"}}, "zh-HK" : {"stringUnit" : {"state" : "needs_review", "value" : "%@後重設"}}}},
+    "Updated %@ ago" : {"localizations" : {"de" : {"stringUnit" : {"state" : "needs_review", "value" : "Vor %@ aktualisiert"}}, "es" : {"stringUnit" : {"state" : "needs_review", "value" : "Actualizado hace %@"}}, "fr" : {"stringUnit" : {"state" : "needs_review", "value" : "Mis à jour il y a %@"}}, "it" : {"stringUnit" : {"state" : "needs_review", "value" : "Aggiornato %@ fa"}}, "pl" : {"stringUnit" : {"state" : "needs_review", "value" : "Zaktualizowano %@ temu"}}, "pt-BR" : {"stringUnit" : {"state" : "needs_review", "value" : "Atualizado há %@"}}, "nl" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ geleden bijgewerkt"}}, "tr" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ önce güncellendi"}}, "ru" : {"stringUnit" : {"state" : "needs_review", "value" : "Обновлено %@ назад"}}, "ja" : {"stringUnit" : {"state" : "needs_review", "value" : "%@前に更新"}}, "zh-Hans" : {"stringUnit" : {"state" : "needs_review", "value" : "%@前更新"}}, "ko" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ 전 업데이트됨"}}, "ar" : {"stringUnit" : {"state" : "needs_review", "value" : "تم التحديث قبل %@"}}, "he" : {"stringUnit" : {"state" : "needs_review", "value" : "עודכן לפני %@"}}, "ur" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ پہلے اپ ڈیٹ ہوا"}}, "zh-Hant" : {"stringUnit" : {"state" : "needs_review", "value" : "%@前更新"}}, "zh-HK" : {"stringUnit" : {"state" : "needs_review", "value" : "%@前更新"}}}},
+    "%@ used" : {"localizations" : {"de" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ verbraucht"}}, "es" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ usados"}}, "fr" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ utilisés"}}, "it" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ utilizzati"}}, "pl" : {"stringUnit" : {"state" : "needs_review", "value" : "Wykorzystano %@"}}, "pt-BR" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ usados"}}, "nl" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ gebruikt"}}, "tr" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ kullanıldı"}}, "ru" : {"stringUnit" : {"state" : "needs_review", "value" : "Использовано %@"}}, "ja" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ 使用"}}, "zh-Hans" : {"stringUnit" : {"state" : "needs_review", "value" : "已用 %@"}}, "ko" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ 사용"}}, "ar" : {"stringUnit" : {"state" : "needs_review", "value" : "تم استخدام %@"}}, "he" : {"stringUnit" : {"state" : "needs_review", "value" : "נוצלו %@"}}, "ur" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ استعمال شدہ"}}, "zh-Hant" : {"stringUnit" : {"state" : "needs_review", "value" : "已用 %@"}}, "zh-HK" : {"stringUnit" : {"state" : "needs_review", "value" : "已用 %@"}}}},
+    "%@ used of %@" : {"localizations" : {"de" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ von %@ verbraucht"}}, "es" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ usados de %@"}}, "fr" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ utilisés sur %@"}}, "it" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ utilizzati su %@"}}, "pl" : {"stringUnit" : {"state" : "needs_review", "value" : "Wykorzystano %@ z %@"}}, "pt-BR" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ usados de %@"}}, "nl" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ van %@ gebruikt"}}, "tr" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ / %@ kullanıldı"}}, "ru" : {"stringUnit" : {"state" : "needs_review", "value" : "Использовано %@ из %@"}}, "ja" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ / %@ 使用"}}, "zh-Hans" : {"stringUnit" : {"state" : "needs_review", "value" : "已用 %@，共 %@"}}, "ko" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ / %@ 사용"}}, "ar" : {"stringUnit" : {"state" : "needs_review", "value" : "تم استخدام %@ من %@"}}, "he" : {"stringUnit" : {"state" : "needs_review", "value" : "נוצלו %@ מתוך %@"}}, "ur" : {"stringUnit" : {"state" : "needs_review", "value" : "%@ میں سے %@ استعمال شدہ"}}, "zh-Hant" : {"stringUnit" : {"state" : "needs_review", "value" : "已用 %@，共 %@"}}, "zh-HK" : {"stringUnit" : {"state" : "needs_review", "value" : "已用 %@，共 %@"}}}},
+    "%lld%% left" : {"localizations" : {"en" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "translated", "value" : "%lld%% left"}}, "other" : {"stringUnit" : {"state" : "translated", "value" : "%lld%% left"}}}}}, "de" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% übrig"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% übrig"}}}}}, "es" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% restante"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% restantes"}}}}}, "fr" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% restant"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% restants"}}}}}, "it" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% rimanente"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% rimanenti"}}}}}, "pl" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "Pozostało %lld%%"}}, "few" : {"stringUnit" : {"state" : "needs_review", "value" : "Pozostało %lld%%"}}, "many" : {"stringUnit" : {"state" : "needs_review", "value" : "Pozostało %lld%%"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "Pozostało %lld%%"}}}}}, "pt-BR" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% restante"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% restantes"}}}}}, "nl" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% over"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% over"}}}}}, "tr" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%%%lld kaldı"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%%%lld kaldı"}}}}}, "ru" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "Осталось %lld%%"}}, "few" : {"stringUnit" : {"state" : "needs_review", "value" : "Осталось %lld%%"}}, "many" : {"stringUnit" : {"state" : "needs_review", "value" : "Осталось %lld%%"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "Осталось %lld%%"}}}}}, "ja" : {"variations" : {"plural" : {"other" : {"stringUnit" : {"state" : "needs_review", "value" : "残り %lld%%"}}}}}, "zh-Hans" : {"variations" : {"plural" : {"other" : {"stringUnit" : {"state" : "needs_review", "value" : "剩余 %lld%%"}}}}}, "ko" : {"variations" : {"plural" : {"other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% 남음"}}}}}, "ar" : {"variations" : {"plural" : {"zero" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% متبقٍ"}}, "one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% متبقٍ"}}, "two" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% متبقٍ"}}, "few" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% متبقٍ"}}, "many" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% متبقٍ"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% متبقٍ"}}}}}, "he" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "נותרו %lld%%"}}, "two" : {"stringUnit" : {"state" : "needs_review", "value" : "נותרו %lld%%"}}, "many" : {"stringUnit" : {"state" : "needs_review", "value" : "נותרו %lld%%"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "נותרו %lld%%"}}}}}, "ur" : {"variations" : {"plural" : {"one" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% باقی"}}, "other" : {"stringUnit" : {"state" : "needs_review", "value" : "%lld%% باقی"}}}}}, "zh-Hant" : {"variations" : {"plural" : {"other" : {"stringUnit" : {"state" : "needs_review", "value" : "剩餘 %lld%%"}}}}}, "zh-HK" : {"variations" : {"plural" : {"other" : {"stringUnit" : {"state" : "needs_review", "value" : "剩餘 %lld%%"}}}}}}},
+    "Session Details" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "تفاصيل الجلسة"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sitzungsdetails"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Detalles de la sesión"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Détails de la session"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "פרטי הפעלה"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dettagli sessione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "セッションの詳細"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "세션 세부 정보"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sessiedetails"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szczegóły sesji"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Detalhes da sessão"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Сведения о сессии"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oturum Ayrıntıları"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "سیشن کی تفصیلات"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "會話詳細資訊"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "会话详情"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "會話詳細資訊"
+          }
+        }
+      }
+    },
+    "Token Usage" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "استخدام الرموز"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Token-Verbrauch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Uso de tokens"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Utilisation des jetons"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "שימוש באסימונים"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Utilizzo dei token"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "トークン使用量"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "토큰 사용량"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tokenverbruik"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Użycie tokenów"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Uso de tokens"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Использование токенов"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Belirteç Kullanımı"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ٹوکن کا استعمال"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "權杖用量"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "令牌用量"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "權杖用量"
+          }
+        }
+      }
+    },
+    "Could not load usage." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "تعذر تحميل الاستخدام."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nutzung konnte nicht geladen werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No se pudo cargar el uso."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossible de charger l'utilisation."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "טעינת השימוש נכשלה."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossibile caricare l'utilizzo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "使用量を読み込めませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "사용량을 불러올 수 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kan gebruik niet laden."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie można załadować użycia."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Não foi possível carregar o uso."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Не удалось загрузить статистику использования."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kullanım yüklenemedi."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "استعمال لوڈ نہیں ہو سکا۔"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "無法載入用量。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "无法加载用量。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "無法載入用量。"
+          }
+        }
+      }
+    },
+    "Token usage is not available for this session on this server." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "استخدام الرموز غير متاح لهذه الجلسة على هذا الخادم."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Die Token-Nutzung ist für diese Sitzung auf diesem Server nicht verfügbar."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El uso de tokens no está disponible para esta sesión en este servidor."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L'utilisation des jetons n'est pas disponible pour cette session sur ce serveur."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "שימוש באסימונים אינו זמין עבור הפעלה זו בשרת זה."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L'utilizzo dei token non è disponibile per questa sessione su questo server."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "このサーバーではこのセッションのトークン使用量を利用できません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "이 서버에서는 이 세션의 토큰 사용량을 사용할 수 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tokenverbruik is niet beschikbaar voor deze sessie op deze server."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Użycie tokenów nie jest dostępne dla tej sesji na tym serwerze."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "O uso de tokens não está disponível para esta sessão neste servidor."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Использование токенов недоступно для этой сессии на этом сервере."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bu sunucuda bu oturum için belirteç kullanımı mevcut değil."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "اس سرور پر اس سیشن کے لیے ٹوکن کا استعمال دستیاب نہیں ہے۔"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "此伺服器上不提供此會話嘅權杖用量。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "此服务器上不提供此会话的令牌用量。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "此伺服器上不提供此會話的權杖用量。"
+          }
+        }
+      }
+    },
+    "Lineage" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "السلسلة"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Herkunft"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Linaje"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lignée"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "שושלת"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lineage"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "セッション履歴"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "세션 계보"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Afstamming"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Linia"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Linhagem"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "История"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Süreç"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "سلسلة"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "會話譜系"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "会话谱系"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "會話譜系"
+          }
+        }
+      }
+    },
+    "Segments" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "الأجزاء"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Segmente"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Segmentos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Segments"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "מקטעים"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Segmenti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "セグメント数"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "세그먼트"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Segmenten"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Segmenty"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Segmentos"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Сегменты"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bölümler"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "حصے"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "分段數"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "分段数"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "分段數"
+          }
+        }
+      }
+    },
+    "Handoff Summary" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ملخص التسليم"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Übergabe-Zusammenfassung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Resumen de traspaso"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Résumé de passation"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "סיכום מסירה"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Riepilogo di consegna"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "引き継ぎ要約"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "인계 요약"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Overdrachtssamenvatting"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Podsumowanie przekazania"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Resumo de transferência"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Сводка для передачи"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Devir Özeti"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "حوالگی کا خلاصہ"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "交接摘要"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "交接摘要"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "交接摘要"
+          }
+        }
+      }
+    },
+    "Generate Summary" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "إنشاء ملخص"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zusammenfassung erstellen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Generar resumen"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Générer le résumé"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "צור סיכום"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Genera riepilogo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "要約を生成"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "요약 생성"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Samenvatting genereren"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wygeneruj podsumowanie"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Gerar resumo"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Создать сводку"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Özet Oluştur"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "خلاصہ بنائیں"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "產生摘要"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "生成摘要"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "產生摘要"
+          }
+        }
+      }
+    },
+    "Generating…" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "جارٍ الإنشاء…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wird erstellt…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Generando…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Génération…"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "יוצר…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Generazione…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "生成中…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "생성 중…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Genereren…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Generowanie…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Gerando…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Создание…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oluşturuluyor…"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "بنایا جا رہا ہے…"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "產生中…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "生成中…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "產生中…"
+          }
+        }
+      }
+    },
+    "Recovery Audit" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "تدقيق الاسترداد"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiederherstellungs-Audit"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Auditoría de recuperación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Audit de récupération"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ביקורת שחזור"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Verifica del recupero"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "リカバリ監査"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "복구 감사"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Herstelcontrole"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Audyt odzyskiwania"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Auditoria de recuperação"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Аудит восстановления"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kurtarma Denetimi"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "بحالی آڈٹ"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "復原審核"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "恢复审计"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "復原稽核"
+          }
+        }
+      }
+    },
+    "Path" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "المسار"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pfad"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ruta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Chemin"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "נתיב"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Percorso"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "パス"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "경로"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pad"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ścieżka"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Caminho"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Путь"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Yol"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "راہ"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "路徑"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "路径"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "路徑"
+          }
+        }
+      }
+    },
+    "Untracked Files" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ملفات غير متتبعة"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Unbeobachtete Dateien"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Archivos sin seguimiento"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Fichiers non suivis"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "קבצים שאינם במעקב"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "File non tracciati"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "未追跡ファイル"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "추적되지 않은 파일"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Niet-gevolgde bestanden"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pliki nieśledzone"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Arquivos não rastreados"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Неотслеживаемые файлы"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "İzlenmeyen Dosyalar"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "غیر ٹریک شدہ فائلیں"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "未追蹤檔案"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "未跟踪文件"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "未追蹤檔案"
+          }
+        }
+      }
+    },
+    "Ahead / Behind" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "أمام / خلف"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Voraus / Hinten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Adelante / Atrás"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En avance / En retard"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "לפנים / מאחור"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Avanti / Indietro"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "進んで / 遅れて"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "앞서감 / 뒤처짐"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Voor / Achter"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Do przodu / Do tyłu"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "À frente / Atrás"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Впереди / Позади"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "İleri / Geri"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "آگے / پیچھے"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "領先 / 落後"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "领先 / 落后"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "領先 / 落後"
+          }
+        }
+      }
+    },
+    "Hidden segment" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "جزء مخفي"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ausgeblendetes Segment"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Segmento oculto"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Segment masqué"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "מקטע מוסתר"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Segmento nascosto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "非表示のセグメント"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "숨겨진 세그먼트"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Verborgen segment"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ukryty segment"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Segmento oculto"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Скрытый сегмент"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Gizli bölüm"
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "چھپا ہوا حصہ"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "隱藏分段"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "隐藏分段"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "隱藏分段"
+          }
+        }
+      }
+    },
+    "Branches need review." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "الفروع تحتاج إلى مراجعة."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zweige müssen überprüft werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Las ramas necesitan revisión."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Des branches doivent être vérifiées."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "הענפים דורשים בדיקה."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "I rami richiedono revisione."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ブランチの確認が必要です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "브랜치 검토가 필요합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vertakkingen moeten worden gecontroleerd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Gałęzie wymagają przeglądu."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ramificações precisam de revisão."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ветви требуют проверки."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dalların incelenmesi gerekiyor."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "شاخوں کی جانچ درکار ہے۔"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "分支需要人工確認。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "分支需要人工确认。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "分支需要人工確認。"
+          }
+        }
+      }
+    },
+    "This session has no continuation history." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "لا تحتوي هذه الجلسة على سجل استمرار."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Diese Sitzung hat keinen Fortführungsverlauf."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esta sesión no tiene historial de continuación."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Cette session n'a aucun historique de continuation."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "להפעלה זו אין היסטוריית המשכיות."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Questa sessione non ha cronologia di continuazione."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "このセッションには継続履歴がありません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "이 세션에는 연속 기록이 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Deze sessie heeft geen voortzettingsgeschiedenis."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ta sesja nie ma historii kontynuacji."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Esta sessão não tem histórico de continuação."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "У этой сессии нет истории продолжений."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bu oturumun devamlılık geçmişi yok."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "اس سیشن کی کوئی تسلسل تاریخ نہیں ہے۔"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "此會話冇延續歷史。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "此会话没有延续历史。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "此會話沒有延續歷史。"
+          }
+        }
+      }
+    },
+    "Lineage is not available on this server." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "السلسلة غير متاحة على هذا الخادم."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Herkunft ist auf diesem Server nicht verfügbar."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "El linaje no está disponible en este servidor."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La lignée n'est pas disponible sur ce serveur."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "שושלת אינה זמינה בשרת זה."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La lineage non è disponibile su questo server."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "このサーバーではセッション履歴を利用できません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "이 서버에서는 세션 계보를 사용할 수 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Afstamming is niet beschikbaar op deze server."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Linia nie jest dostępna na tym serwerze."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "A linhagem não está disponível neste servidor."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "История недоступна на этом сервере."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Süreç bu sunucuda kullanılamıyor."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "سلسلة اس سرور پر دستیاب نہیں ہے۔"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "此伺服器唔提供會話譜系。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "此服务器不提供会话谱系。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "此伺服器不提供會話譜系。"
+          }
+        }
+      }
+    },
+    "Generated from local content (server fallback)." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "تم إنشاؤه من المحتوى المحلي (احتياطي الخادم)."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aus lokalem Inhalt erstellt (Server-Fallback)."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Generado a partir del contenido local (respaldo del servidor)."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Généré à partir du contenu local (solution de repli du serveur)."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "נוצר מתוכן מקומי (גיבוי שרת)."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Generato dal contenuto locale (fallback del server)."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ローカルコンテンツから生成（サーバーのフォールバック）。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "로컬 콘텐츠에서 생성됨 (서버 폴백)."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Gegenereerd uit lokale inhoud (server-fallback)."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wygenerowano z treści lokalnej (awaryjnie na serwerze)."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Gerado a partir do conteúdo local (fallback do servidor)."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Создано из локального содержимого (резервный режим сервера)."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Yerel içerikten oluşturuldu (sunucu yedeği)."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "مقامی مواد سے تیار کیا گیا (سرور بیک اپ)۔"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "由本機內容產生（伺服器後備）。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "由本地内容生成（服务器回退）。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "由本機內容產生（伺服器後備）。"
+          }
+        }
+      }
+    },
+    "Worktree folder is missing from disk." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "مجلد شجرة العمل مفقود من القرص."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Der Worktree-Ordner fehlt auf der Festplatte."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Falta la carpeta del árbol de trabajo en el disco."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le dossier de l'arborescence de travail est absent du disque."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "תיקיית עץ העבודה חסרה בכונן."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La cartella del worktree manca dal disco."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ワークツリーフォルダがディスクに見つかりません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "작업 트리 폴더가 디스크에 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "De worktree-map ontbreekt op schijf."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Folder drzewa pracy nie istnieje na dysku."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "A pasta da árvore de trabalho está ausente do disco."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Папка рабочего дерева отсутствует на диске."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Çalışma ağacı klasörü diskte eksik."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ورک ٹری فولڈر ڈسک پر موجود نہیں ہے۔"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "磁碟上缺少工作樹資料夾。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "磁盘上缺少工作树文件夹。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "磁碟上缺少工作樹資料夾。"
+          }
+        }
+      }
+    },
+    "No recovery issues for this session." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "لا توجد مشكلات استرداد لهذه الجلسة."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Keine Wiederherstellungsprobleme für diese Sitzung."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "No hay problemas de recuperación para esta sesión."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aucun problème de récupération pour cette session."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "אין בעיות שחזור עבור הפעלה זו."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nessun problema di recupero per questa sessione."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "このセッションにリカバリの問題はありません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "이 세션에 복구 문제가 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Geen herstelproblemen voor deze sessie."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak problemów z odzyskiwaniem dla tej sesji."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sem problemas de recuperação para esta sessão."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Проблем восстановления для этой сессии нет."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bu oturum için kurtarma sorunu yok."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "اس سیشن کے لیے کوئی بحالی مسئلہ نہیں ہے۔"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "此會話冇復原問題。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "此会话没有恢复问题。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "此會話沒有復原問題。"
+          }
+        }
+      }
+    },
+    "Recovery audit is not available on this server." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "تدقيق الاسترداد غير متاح على هذا الخادم."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiederherstellungs-Audit ist auf diesem Server nicht verfügbar."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La auditoría de recuperación no está disponible en este servidor."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L'audit de récupération n'est pas disponible sur ce serveur."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ביקורת השחזור אינה זמינה בשרת זה."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La verifica del recupero non è disponibile su questo server."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "このサーバーではリカバリ監査を利用できません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "이 서버에서는 복구 감사를 사용할 수 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Herstelcontrole is niet beschikbaar op deze server."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Audyt odzyskiwania nie jest dostępny na tym serwerze."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "A auditoria de recuperação não está disponível neste servidor."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Аудит восстановления недоступен на этом сервере."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kurtarma denetimi bu sunucuda kullanılamıyor."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "بحالی آڈٹ اس سرور پر دستیاب نہیں ہے۔"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "此伺服器唔提供復原審核。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "此服务器不提供恢复审计。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "此伺服器不提供復原稽核。"
+          }
+        }
+      }
+    },
+    "Some sessions need manual review on the server." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "بعض الجلسات تحتاج إلى مراجعة يدوية على الخادم."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Einige Sitzungen müssen auf dem Server manuell überprüft werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Algunas sesiones necesitan revisión manual en el servidor."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Certaines sessions doivent être vérifiées manuellement sur le serveur."
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "חלק מההפעלות דורשות בדיקה ידנית בשרת."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Alcune sessioni richiedono revisione manuale sul server."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "一部のセッションはサーバー上で手動確認が必要です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "일부 세션은 서버에서 수동 검토가 필요합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sommige sessies moeten handmatig op de server worden gecontroleerd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Niektóre sesje wymagają ręcznego przeglądu na serwerze."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Algumas sessões precisam de revisão manual no servidor."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Некоторые сессии требуют ручной проверки на сервере."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bazı oturumların sunucuda elle incelenmesi gerekiyor."
+          }
+        },
+        "ur" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "کچھ سیشنز کو سرور پر دستی جانچ درکار ہے۔"
+          }
+        },
+        "zh-HK" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "部分會話需要在伺服器上人工確認。"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "部分会话需要在服务器上人工确认。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "部分會話需要在伺服器上人工確認。"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

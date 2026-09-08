@@ -361,6 +361,39 @@ final class ChatViewModel {
     /// list so the transcript's `body` never rebuilds it. Always assigned
     /// through `applySkillSlashSuggestions(_:)`.
     private(set) var skillChipCatalog: ComposerChipCatalog = .empty
+    /// Workspace files picked from the composer's `@` panel in this chat.
+    /// Held here rather than in the composer so the transcript draws the same
+    /// references the composer does, and so switching chats never carries one
+    /// session's paths into another.
+    private(set) var fileChipPaths: Set<String> = []
+    /// The catalog both the composer and the transcript draw from: this chat's
+    /// skills plus the files it has referenced.
+    private(set) var composerChipCatalog: ComposerChipCatalog = .empty
+    /// The workspace directory listings behind both the composer's `@` panel and
+    /// the confirmation of `@path` references in a restored draft or transcript,
+    /// so a folder either surface has already listed is never listed twice.
+    @ObservationIgnored let filePathSearch = ComposerFilePathSearch()
+    @ObservationIgnored private var fileChipReferenceLoad: Task<Void, Never>?
+    /// Identifies the pass a handle belongs to, so a pass that was cancelled and
+    /// finishes late cannot clear the handle of the one that replaced it.
+    @ObservationIgnored private var fileChipReferenceLoadGeneration = 0
+    /// Candidates the server has already answered for, so a `@word` that is not
+    /// a file is not re-checked on every transcript update.
+    @ObservationIgnored private var checkedFileChipCandidates: Set<String> = []
+    /// Bumped whenever the confirmed paths are thrown away because the
+    /// workspace moved. The chat re-runs its confirmation pass on the change, so
+    /// a file that exists in the new workspace too comes back as a chip.
+    private(set) var fileChipScopeRevision = 0
+    /// Bumped whenever the transcript is replaced rather than extended: a
+    /// cache-first paint, the server's reconcile, a page of older messages. A
+    /// reconcile can rewrite a message in the middle of the list without
+    /// changing the count or the last id, so nothing cheaper than "the
+    /// transcript was swapped" can be trusted to notice a reference arriving.
+    private(set) var transcriptRevision = 0
+    /// Most folders one batch of a confirmation pass lists. The pass works
+    /// through every folder its candidates name, a batch at a time, so a long
+    /// transcript is answered in full without one burst of requests.
+    private static let fileChipDirectoryLimit = 20
     private(set) var profileOptions: [ProfileSummary] = []
     private(set) var isSingleProfileMode = false
     private(set) var selectedProfileName: String?
@@ -403,7 +436,15 @@ final class ChatViewModel {
     private(set) var hasActivatedGoalCommand = false
 
     private let sessionID: String?
-    private var currentWorkspace: String?
+    /// The workspace this chat's session is pointed at. `/workspace` and the
+    /// composer's picker move it without the session id changing, and every
+    /// `@path` the chat has confirmed was confirmed against the old root.
+    private var currentWorkspace: String? {
+        didSet {
+            guard currentWorkspace != oldValue else { return }
+            resetFileChipReferences()
+        }
+    }
     private var currentModel: String?
     private var currentModelProvider: String?
     private var currentProfile: String?
@@ -906,6 +947,19 @@ final class ChatViewModel {
             currentModel = response.session?.model ?? option.id
             currentModelProvider = response.session?.modelProvider ?? option.providerID
             currentWorkspace = response.session?.workspace ?? currentWorkspace
+            // Server stamps the new model's context_length onto the session on
+            // every model swap; older test fixtures and any server that omits it
+            // must not blow away a usable snapshot.
+            if let session = response.session, session.contextLength != nil || session.thresholdTokens != nil || session.lastPromptTokens != nil || session.inputTokens != nil || session.outputTokens != nil || session.estimatedCost != nil {
+                contextWindowSnapshot = ContextWindowSnapshot(
+                    contextLength: session.contextLength,
+                    thresholdTokens: session.thresholdTokens,
+                    lastPromptTokens: session.lastPromptTokens,
+                    inputTokens: session.inputTokens,
+                    outputTokens: session.outputTokens,
+                    estimatedCost: session.estimatedCost
+                )
+            }
             pendingExplicitModelPick = true
             // Still inside the isUpdatingComposerConfiguration window, so the
             // effort menu stays disabled until the new model's gating lands —
@@ -1475,7 +1529,11 @@ final class ChatViewModel {
             streamCoordinator.reconcileSessionLoad(
                 loadedActiveStreamID: loadedActiveStreamID,
                 preparation: streamLoadPreparation,
-                usedCacheFallback: false
+                usedCacheFallback: false,
+                runStartedAt: Self.activeRunStartDate(
+                    pendingStartedAt: session?.pendingStartedAt,
+                    messages: messages
+                )
             )
         } catch {
             lastError = error
@@ -1491,6 +1549,7 @@ final class ChatViewModel {
                     if !cachedMessages.isEmpty {
                         clearCompressionAnchorMetadata()
                         messages = cachedMessages
+                        transcriptRevision &+= 1
                         latestServerLoadHadAssistantResponseAfterLatestUser = Self.hasAssistantResponseAfterLatestUser(
                             in: messages
                         )
@@ -1597,6 +1656,7 @@ final class ChatViewModel {
         guard !cachedMessages.isEmpty else { return [] }
 
         messages = cachedMessages
+        transcriptRevision &+= 1
         messagesOffset = 0
         hasOlderMessages = false
         isViewingCachedData = false
@@ -1616,6 +1676,7 @@ final class ChatViewModel {
         // in-flight local content while its send/stream is still running.
         guard messages == placeholder else { return }
         messages = previousMessages
+        transcriptRevision &+= 1
         messagesOffset = previousMessagesOffset
         hasOlderMessages = previousMessagesOffset > 0
     }
@@ -1661,6 +1722,7 @@ final class ChatViewModel {
             let didAddMessages = mergedMessages.count > messages.count
             applyCompressionAnchorMetadata(from: session)
             messages = mergedMessages
+            transcriptRevision &+= 1
             latestServerLoadHadAssistantResponseAfterLatestUser = Self.hasAssistantResponseAfterLatestUser(
                 in: messages
             )
@@ -1794,6 +1856,7 @@ final class ChatViewModel {
             reloadedMessagesOffset: reloadedMessagesOffset
         ) {
             messages = expandedMessages
+            transcriptRevision &+= 1
             messagesOffset = previousMessagesOffset
             hasOlderMessages = previousMessagesOffset > 0
             return
@@ -1806,12 +1869,14 @@ final class ChatViewModel {
             reloadedMessagesOffset: reloadedMessagesOffset
         ) {
             messages = trimmedMessages
+            transcriptRevision &+= 1
             messagesOffset = previousMessagesOffset
             hasOlderMessages = previousMessagesOffset > 0 || session?.messagesTruncated == true
             return
         }
 
         messages = reloadedMessages
+        transcriptRevision &+= 1
         updateOlderMessagePagination(from: session, loadedMessageCount: messages.count)
     }
 
@@ -2020,6 +2085,30 @@ final class ChatViewModel {
             message.role == candidate.role &&
                 message.content?.trimmingCharacters(in: .whitespacesAndNewlines) == candidateContent
         }
+    }
+
+    /// When the session's in-flight turn started, for seeding the stream
+    /// coordinator's run clock: the server's `pending_started_at` first, then the
+    /// latest user message's timestamp. Both survive leaving and re-entering the
+    /// session, so "Working for" keeps counting from one instant; nil leaves the
+    /// coordinator counting from when it discovered the stream.
+    nonisolated private static func activeRunStartDate(
+        pendingStartedAt: Double?,
+        messages: [ChatMessage]
+    ) -> Date? {
+        if let pendingStartedAt, pendingStartedAt > 0 {
+            return Date(timeIntervalSince1970: pendingStartedAt)
+        }
+
+        guard let latestUserTimestamp = messages
+            .last(where: TranscriptTurnClassifier.isUserTurnBoundary)?
+            .timestamp,
+            latestUserTimestamp > 0
+        else {
+            return nil
+        }
+
+        return Date(timeIntervalSince1970: latestUserTimestamp)
     }
 
     nonisolated private static func hasAssistantResponseAfterLatestUser(in messages: [ChatMessage]) -> Bool {
@@ -2234,7 +2323,9 @@ final class ChatViewModel {
         }
 
         let message = draft.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !message.isEmpty else { return false }
+        // Attachment-only sends (empty text, staged attachments) synthesize
+        // their message text in `PendingAttachment.chatMessageText` below.
+        guard !message.isEmpty || !attachmentCoordinator.pendingAttachments.isEmpty else { return false }
 
         guard let sessionID else {
             sendErrorMessage = String(localized: "The server did not provide a session ID.")
@@ -2243,12 +2334,16 @@ final class ChatViewModel {
 
         let localMessageID = "local-\(UUID().uuidString)"
         let attachmentPreparation = attachmentCoordinator.prepareForSend(localMessageID: localMessageID)
+        let messageForAPI = attachmentPreparation.chatMessageText(draft: message)
+        // Attachment-only sends show the synthesized text in the bubble, matching
+        // what a reload from the server displays; text sends keep the bare draft.
+        let displayText = message.isEmpty ? messageForAPI : message
 
         let didStart = await performChatSend(
             sessionID: sessionID,
             localMessageID: localMessageID,
-            displayContent: message,
-            messageForAPI: attachmentPreparation.chatMessageText(draft: message),
+            displayContent: displayText,
+            messageForAPI: messageForAPI,
             messageAttachments: attachmentPreparation.messageAttachments,
             apiPayloads: attachmentPreparation.apiPayloads,
             attachmentsToRestoreOnFailure: attachmentPreparation.attachments,
@@ -2397,6 +2492,7 @@ final class ChatViewModel {
 
         do {
             let explicitModelPick = explicitModelPickForChatStart()
+            let sentAt = Date()
             let response = try await client.startChat(
                 sessionID: sessionID,
                 message: messageForAPI,
@@ -2417,7 +2513,10 @@ final class ChatViewModel {
             }
 
             completeExplicitModelPickForChatStart(explicitModelPick)
-            streamCoordinator.start(streamID: streamID)
+            streamCoordinator.start(
+                streamID: streamID,
+                runStartedAt: response.runStartedAt(sentAt: sentAt)
+            )
             return true
         } catch {
             if let streamID = (error as? APIError)?.activeStreamID {
@@ -2573,6 +2672,7 @@ final class ChatViewModel {
         resetPendingStreamingContentBuffers()
         clearCompressionAnchorMetadata()
         messages = []
+        transcriptRevision &+= 1
         messagesOffset = 0
         hasOlderMessages = false
         setCompletedToolCallGroups([])
@@ -3129,6 +3229,7 @@ final class ChatViewModel {
         let previousCatalog = skillChipCatalog
         skillSlashSuggestions = suggestions
         skillChipCatalog = ComposerChipCatalog(skills: suggestions)
+        composerChipCatalog = skillChipCatalog.withFilePaths(fileChipPaths)
 
         // A catalog that draws differently redraws the transcript: sent `/slug`
         // text becomes a chip, or an existing chip changes size or goes away.
@@ -3137,6 +3238,193 @@ final class ChatViewModel {
         if skillChipCatalog != previousCatalog {
             transcriptRelayoutScrollToken += 1
         }
+    }
+
+    /// Remembers a workspace file the user picked in the composer, so its
+    /// `@path` draws as a chip there and in the sent message.
+    ///
+    /// Recorded straight away rather than waiting on the server: the panel only
+    /// ever offers paths a listing just returned, so the chip appears with the
+    /// insertion instead of a beat later.
+    func recordFileChipReference(_ path: String) {
+        let path = path.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !path.isEmpty else { return }
+
+        checkedFileChipCandidates.insert(path)
+        guard !fileChipPaths.contains(path) else { return }
+
+        fileChipPaths.insert(path)
+        composerChipCatalog = skillChipCatalog.withFilePaths(fileChipPaths)
+        // A wider catalog can turn sent `@path` text into a chip, which changes
+        // the height of a bubble already on screen.
+        transcriptRelayoutScrollToken += 1
+    }
+
+    /// Confirms the `@path` candidates in `draft` and in the transcript's user
+    /// messages against the session's workspace.
+    ///
+    /// What the composer picked lives in this view model, and this view model
+    /// dies when the chat is left — so on the way back in, and on any other
+    /// device, the only thing that knows a `@word` is a file is the server. Each
+    /// candidate's parent folder is listed once, through the same cache the `@`
+    /// panel fills, and every candidate the listing contains becomes a chip in
+    /// both the composer and the transcript.
+    ///
+    /// The work lives on a task this view model owns, like the skill loader: a
+    /// caller cancelled by an unrelated view update cannot take the listings
+    /// down with it, and a caller arriving mid-pass waits for that pass rather
+    /// than starting a second one over the same folders.
+    func loadFileChipReferences(draft: String) async {
+        guard let sessionID, !sessionID.isEmpty else { return }
+
+        while let existing = fileChipReferenceLoad {
+            await existing.value
+        }
+
+        let candidates = fileChipReferenceCandidates(draft: draft)
+        guard !candidates.isEmpty else { return }
+
+        let workspace = currentWorkspace
+        fileChipReferenceLoadGeneration &+= 1
+        let loadGeneration = fileChipReferenceLoadGeneration
+        let load = Task { [weak self] in
+            guard let self else { return }
+            await self.confirmFileChipReferences(candidates, sessionID: sessionID, workspace: workspace)
+            guard loadGeneration == self.fileChipReferenceLoadGeneration else { return }
+            self.fileChipReferenceLoad = nil
+        }
+        fileChipReferenceLoad = load
+        await load.value
+    }
+
+    /// Forgets every confirmed `@path` because the workspace moved.
+    ///
+    /// A path is only a file inside the workspace it was found in, so switching
+    /// one has to take the chips with it — including the ones accepted from the
+    /// panel, which were never checked against anything else. The revision bump
+    /// is what asks the chat for a fresh pass, so a file that exists under the
+    /// new root as well comes straight back.
+    private func resetFileChipReferences() {
+        filePathSearch.reset()
+        checkedFileChipCandidates.removeAll()
+        // Cancelling, not just forgetting: a pass left running would keep
+        // listing the old root's folders, and every folder it had already
+        // listed would settle candidates against a workspace that is gone.
+        fileChipReferenceLoad?.cancel()
+        fileChipReferenceLoad = nil
+        fileChipReferenceLoadGeneration &+= 1
+
+        fileChipScopeRevision &+= 1
+        guard !fileChipPaths.isEmpty else { return }
+
+        fileChipPaths.removeAll()
+        composerChipCatalog = skillChipCatalog.withFilePaths(fileChipPaths)
+        transcriptRelayoutScrollToken += 1
+    }
+
+    /// Every `@…` the chat still has no answer for, draft first: what the user
+    /// is looking at while typing is worth confirming before the backlog.
+    private func fileChipReferenceCandidates(draft: String) -> [String] {
+        var candidates: [String] = []
+        var seen: Set<String> = []
+
+        // The draft's own trailing reference counts as finished here: a chip
+        // whose trailing space was backspaced is still a reference, and by the
+        // time a pass runs the user has moved on to whatever changed the token.
+        for text in [draft] + messages.filter({ $0.role == "user" }).map({ $0.content ?? "" }) {
+            for candidate in ComposerChipTokenizer.fileReferenceCandidates(in: text, isComplete: true) {
+                guard !checkedFileChipCandidates.contains(candidate),
+                      !fileChipPaths.contains(candidate),
+                      seen.insert(candidate).inserted
+                else {
+                    continue
+                }
+                candidates.append(candidate)
+            }
+        }
+
+        return candidates
+    }
+
+    /// Lists each candidate's parent folder once and keeps the candidates that
+    /// folder actually holds.
+    ///
+    /// A folder whose listing failed leaves its candidates unanswered rather
+    /// than answered "no", so the next pass retries them; a folder that answered
+    /// marks its candidates settled, which is what keeps a `@word` that is not a
+    /// file from costing a request on every transcript update.
+    private func confirmFileChipReferences(
+        _ candidates: [String],
+        sessionID: String,
+        workspace: String?
+    ) async {
+        var wantedByDirectory: [String: Set<String>] = [:]
+        var directories: [String] = []
+        for candidate in candidates {
+            let directory = FileTree.parentPath(of: candidate)
+            if wantedByDirectory[directory] == nil { directories.append(directory) }
+            wantedByDirectory[directory, default: []].insert(candidate)
+        }
+
+        var start = directories.startIndex
+        while start < directories.endIndex {
+            let end = directories.index(
+                start,
+                offsetBy: Self.fileChipDirectoryLimit,
+                limitedBy: directories.endIndex
+            ) ?? directories.endIndex
+            let batch = directories[start..<end]
+            start = end
+
+            var confirmed: Set<String> = []
+            var settled: Set<String> = []
+
+            for directory in batch {
+                // Between folders, not just between batches: a workspace switch
+                // part-way through a pass must stop it before the next request,
+                // and nothing it has learned since may be applied.
+                guard !Task.isCancelled else { return }
+                guard let wanted = wantedByDirectory[directory] else { continue }
+                guard let entries = try? await filePathSearch.entries(
+                    in: directory,
+                    sessionID: sessionID,
+                    apiClient: client
+                ) else {
+                    // A listing that failed is not an answer. Leaving the
+                    // candidates open is what lets the next pass retry them.
+                    continue
+                }
+
+                confirmed.formUnion(wanted.intersection(Set(entries.map(\.path))))
+                settled.formUnion(wanted)
+            }
+
+            // Checked between batches as well as at the end: the chat can be
+            // left, or its workspace switched, part-way through a long pass, and
+            // a listing taken against the old root must never widen the new
+            // one's catalog.
+            guard !Task.isCancelled,
+                  sessionID == self.sessionID,
+                  workspace == currentWorkspace
+            else {
+                return
+            }
+
+            apply(confirmed: confirmed, settled: settled)
+        }
+    }
+
+    /// Folds one batch's answers into the catalog, drawing whatever it confirmed
+    /// straight away rather than making the reader wait for the last folder.
+    private func apply(confirmed: Set<String>, settled: Set<String>) {
+        checkedFileChipCandidates.formUnion(settled)
+
+        let recovered = confirmed.subtracting(fileChipPaths)
+        guard !recovered.isEmpty else { return }
+
+        fileChipPaths.formUnion(recovered)
+        composerChipCatalog = skillChipCatalog.withFilePaths(fileChipPaths)
+        transcriptRelayoutScrollToken += 1
     }
 
     private func branchSessionFromSlashCommand(_ args: String) async -> SlashCommandExecutionResult {
@@ -3260,6 +3548,7 @@ final class ChatViewModel {
 
             applyCompressionAnchorMetadata(from: session)
             messages = session.messages ?? []
+            transcriptRevision &+= 1
             updateOlderMessagePagination(from: session, loadedMessageCount: messages.count)
             isViewingCachedData = false
             let snapshot = ContextWindowSnapshot(
@@ -3499,6 +3788,7 @@ final class ChatViewModel {
             attachmentCoordinator.removeAllLocalPreviews()
 
             let explicitModelPick = explicitModelPickForChatStart()
+            let sentAt = Date()
             let chatResponse = try await client.startChat(
                 sessionID: sessionID,
                 message: lastUserText,
@@ -3523,7 +3813,10 @@ final class ChatViewModel {
                 )
             )
 
-            streamCoordinator.start(streamID: streamID)
+            streamCoordinator.start(
+                streamID: streamID,
+                runStartedAt: chatResponse.runStartedAt(sentAt: sentAt)
+            )
             return .executed(message: nil)
         } catch {
             lastError = error
@@ -3782,6 +4075,7 @@ final class ChatViewModel {
 
             // Now send the edited text through the normal chat flow
             let explicitModelPick = explicitModelPickForChatStart()
+            let sentAt = Date()
             let chatResponse = try await client.startChat(
                 sessionID: sessionID,
                 message: editedText,
@@ -3810,7 +4104,10 @@ final class ChatViewModel {
 
             streamCoordinator.prepareForNewResponse()
             responseCompletionNeedsTranscriptRefresh = false
-            streamCoordinator.start(streamID: streamID)
+            streamCoordinator.start(
+                streamID: streamID,
+                runStartedAt: chatResponse.runStartedAt(sentAt: sentAt)
+            )
             return true
         } catch {
             lastError = error
@@ -3884,6 +4181,7 @@ final class ChatViewModel {
             }
 
             let explicitModelPick = explicitModelPickForChatStart()
+            let sentAt = Date()
             let chatResponse = try await client.startChat(
                 sessionID: sessionID,
                 message: userText,
@@ -3902,7 +4200,10 @@ final class ChatViewModel {
             completeExplicitModelPickForChatStart(explicitModelPick)
             streamCoordinator.prepareForNewResponse()
             responseCompletionNeedsTranscriptRefresh = false
-            streamCoordinator.start(streamID: streamID)
+            streamCoordinator.start(
+                streamID: streamID,
+                runStartedAt: chatResponse.runStartedAt(sentAt: sentAt)
+            )
             return true
         } catch {
             lastError = error

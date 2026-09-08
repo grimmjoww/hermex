@@ -316,6 +316,12 @@ struct ChatView: View {
     @State private var selectableResponseText: SelectableTextPresentation?
     @State private var attachmentPreviewItem: ChatAttachmentPreviewItem?
     @State private var transcriptMediaPreviewItem: TranscriptMediaPreviewItem?
+    @State private var transcriptMediaImageItem: TranscriptMediaPreviewItem?
+    @State private var attachmentImageItem: ChatAttachmentPreviewItem?
+    /// A workspace file a chat link named; presented on the source viewer at its line.
+    @State private var openedFileReference: FileReference?
+    /// Per-session read details (tracker item 2): usage now, more reads later.
+    @State private var showsSessionDetails = false
     @State private var pendingProfileSelection: ProfileSummary?
     @State private var showProfileNewSessionConfirmation = false
     /// Set while the destructive `/clear` confirmation is on screen. Holds the
@@ -450,6 +456,9 @@ struct ChatView: View {
             isSendingVoiceNote: viewModel.isSendingVoiceNote,
             autoStartsVoiceInput: autoStartsVoiceInput,
             apiClient: viewModel.client,
+            sessionID: session.sessionId,
+            chipFilePaths: viewModel.fileChipPaths,
+            filePathSearch: viewModel.filePathSearch,
             uploadAttachmentErrorMessage: viewModel.uploadAttachmentErrorMessage,
             onSend: {
                 Task { await sendDraftMessage() }
@@ -531,12 +540,16 @@ struct ChatView: View {
                 }
             },
             onPreviewAttachment: { attachment in
-                presentPreviewRestoringComposerFocusIfNeeded {
-                    attachmentPreviewItem = ChatAttachmentPreviewItem(pending: attachment)
-                }
+                presentAttachmentPreview(ChatAttachmentPreviewItem(pending: attachment))
             },
             onDismissUploadAttachmentError: {
                 viewModel.setUploadAttachmentError(nil)
+            },
+            onSelectFileReference: { path in
+                viewModel.recordFileChipReference(path)
+            },
+            onOpenFileReference: { path in
+                openedFileReference = FileReference(path: path, line: nil, column: nil)
             },
             onSelectGitBranch: { target in
                 Task { await performGitCheckout(target) }
@@ -578,6 +591,39 @@ struct ChatView: View {
         return nil
     }
 
+    /// An image is known to be an image before it is fetched, so it opens in the
+    /// full-bleed lightbox. Everything else keeps the preview sheet, which still has to
+    /// decide between audio, video, and an unsupported file once the bytes arrive.
+    private func presentTranscriptMediaPreview(_ reference: TranscriptMediaReference) {
+        presentPreviewRestoringComposerFocusIfNeeded {
+            let item = TranscriptMediaPreviewItem(reference: reference)
+            if reference.isRasterImageCandidate, !reference.isExtensionlessRemoteMediaCandidate {
+                transcriptMediaImageItem = item
+            } else {
+                transcriptMediaPreviewItem = item
+            }
+        }
+    }
+
+    private func presentAttachmentPreview(_ item: ChatAttachmentPreviewItem) {
+        presentPreviewRestoringComposerFocusIfNeeded {
+            if item.inferredIsImage {
+                attachmentImageItem = item
+            } else {
+                attachmentPreviewItem = item
+            }
+        }
+    }
+
+    private func transcriptMediaImageLightbox(for item: TranscriptMediaPreviewItem) -> some View {
+        TranscriptMediaImageLightbox(
+            server: server,
+            sessionID: transcriptMediaSessionID,
+            item: item,
+            onAPIError: onAPIError
+        )
+    }
+
     private func transcriptMediaPreviewView(for item: TranscriptMediaPreviewItem) -> some View {
         TranscriptMediaPreviewView(
             server: server,
@@ -585,6 +631,34 @@ struct ChatView: View {
             item: item,
             onAPIError: onAPIError
         )
+    }
+
+    /// A chat link that names a workspace file opens the source viewer at its line; every
+    /// other link keeps the system behaviour. The viewer's own error state covers a path
+    /// the server no longer has, so the tap never waits on a fetch.
+    private func handleTranscriptLink(_ url: URL) -> OpenURLAction.Result {
+        guard let reference = FileReference.parse(url.absoluteString, workspaceRoot: session.workspace) else {
+            return .systemAction
+        }
+        openedFileReference = reference
+        return .handled
+    }
+
+    private func fileReferenceSheet(for reference: FileReference) -> some View {
+        NavigationStack {
+            FilePreviewView(
+                session: session,
+                server: server,
+                entry: WorkspaceEntry(name: reference.name, path: reference.path),
+                initialLine: reference.line,
+                onAPIError: onAPIError
+            )
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Done") { openedFileReference = nil }
+                }
+            }
+        }
     }
 
     private var transcriptMediaSessionID: String? {
@@ -753,6 +827,16 @@ struct ChatView: View {
                             }
                         }
 
+                        ChatToolbarActionSlot {
+                            Button {
+                                showsSessionDetails = true
+                            } label: {
+                                Label("Session Details", systemImage: "info.circle")
+                            }
+                            .disabled(viewModel.isViewingCachedData)
+                            .accessibilityLabel("Session Details")
+                        }
+
                         if showsGitControls, gitAvailabilityViewModel.hasRepository {
                             ChatToolbarActionSlot {
                                 gitActionsMenu
@@ -781,6 +865,34 @@ struct ChatView: View {
                 }
             }
             .sheet(item: $transcriptMediaPreviewItem, content: transcriptMediaPreviewView)
+            .fullScreenCover(item: $attachmentImageItem) { item in
+                ChatAttachmentImageLightbox(
+                    session: session,
+                    server: server,
+                    item: item,
+                    onAPIError: onAPIError
+                )
+            }
+            .onChange(of: attachmentImageItem == nil) { _, isDismissed in
+                if isDismissed {
+                    restoreComposerFocusAfterPreviewIfNeeded()
+                }
+            }
+            .fullScreenCover(item: $transcriptMediaImageItem, content: transcriptMediaImageLightbox)
+            .onChange(of: transcriptMediaImageItem == nil) { _, isDismissed in
+                if isDismissed {
+                    restoreComposerFocusAfterPreviewIfNeeded()
+                }
+            }
+            .onChange(of: transcriptMediaPreviewItem == nil) { _, isDismissed in
+                if isDismissed {
+                    restoreComposerFocusAfterPreviewIfNeeded()
+                }
+            }
+            .sheet(item: $openedFileReference, content: fileReferenceSheet)
+            .sheet(isPresented: $showsSessionDetails) {
+                SessionDetailsView(session: session, server: server)
+            }
             .sheet(item: $activeGitSheet, content: gitSheet)
             .sheet(item: $turnDiffPresentation, content: turnDiffSheet)
             .alert(item: $gitAlert, content: gitAlertPresentation)
@@ -1324,12 +1436,12 @@ struct ChatView: View {
                 scrollToLatestContent(proxy, animated: animated)
             },
             onPreviewAttachment: { attachment, localData in
-                presentPreviewRestoringComposerFocusIfNeeded {
-                    attachmentPreviewItem = ChatAttachmentPreviewItem(message: attachment, localData: localData)
-                }
+                presentAttachmentPreview(
+                    ChatAttachmentPreviewItem(message: attachment, localData: localData)
+                )
             },
             onPreviewTranscriptMedia: { reference in
-                transcriptMediaPreviewItem = TranscriptMediaPreviewItem(reference: reference)
+                presentTranscriptMediaPreview(reference)
             },
             onToggleListening: { context in
                 viewModel.toggleListening(to: context)
@@ -1362,10 +1474,35 @@ struct ChatView: View {
         .onChange(of: viewModel.latestRunOutcome) {
             handleLatestRunOutcomeChange(viewModel.latestRunOutcome)
         }
-        .environment(\.skillChipCatalog, viewModel.skillChipCatalog)
+        .environment(\.composerChipCatalog, viewModel.composerChipCatalog)
+        .environment(\.openURL, OpenURLAction(handler: handleTranscriptLink))
+        .environment(\.chatWorkspaceRoot, session.workspace)
         .task(id: transcriptSkillReferenceCount) {
             await loadSkillSuggestionsForTranscriptChipsIfNeeded()
         }
+        .task(id: fileChipReferenceScanToken) {
+            await viewModel.loadFileChipReferences(draft: draftMessage)
+        }
+    }
+
+    /// Changes whenever there is new text that could name a workspace file, or
+    /// whenever the answers already given have been thrown away: the transcript
+    /// grew, was swapped for the server's copy (which can rewrite a message in
+    /// the middle without changing the count or the last id), the workspace
+    /// moved, or the draft gained or lost a finished `@…`.
+    ///
+    /// Everything here is O(1) or bounded by the draft, because it runs on every
+    /// transcript update, including each token of a live stream. The scan of the
+    /// transcript itself is the view model's, and it skips candidates the server
+    /// has already answered for.
+    private var fileChipReferenceScanToken: String {
+        let draftCandidates = ComposerChipTokenizer.fileReferenceCandidates(in: draftMessage)
+        return [
+            String(viewModel.messages.count),
+            String(viewModel.transcriptRevision),
+            String(viewModel.fileChipScopeRevision),
+            draftCandidates.joined(separator: " ")
+        ].joined(separator: "|")
     }
 
     /// How many sent messages look like they name a skill.
@@ -1829,7 +1966,11 @@ struct ChatView: View {
         _ submittedDraft: String,
         submittedDraftRevision: Int
     ) async -> Bool {
-        guard !submittedDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+        // Attachment-only sends (empty text) flow through; the view model
+        // synthesize the message text. `draftStore.setDraft("")` below is the
+        // correct end state for them: the draft is empty after sending.
+        let hasStagedAttachments = !viewModel.pendingAttachments.isEmpty
+        guard !submittedDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || hasStagedAttachments else {
             return false
         }
 

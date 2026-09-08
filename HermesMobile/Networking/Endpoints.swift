@@ -9,6 +9,16 @@ enum Endpoint {
     case sessionsSearch(query: String, content: Bool, depth: Int)
     case session(id: String, includeMessages: Bool, messageLimit: Int?, messageBefore: Int?, expandRenderable: Bool = false)
     case sessionStatus(id: String)
+    /// Read-only token counters for one session (tracker item 2 reads).
+    case sessionUsage(id: String)
+    /// Bounded lifecycle report for a session's continuation lineage.
+    case sessionLineageReport(id: String)
+    /// Server-wide recovery audit; the sheet filters items to one session.
+    case sessionRecoveryAudit
+    /// Read-only git-worktree snapshot for a worktree-backed session.
+    case sessionWorktreeStatus(id: String)
+    /// Model-generated summary of recent activity; POST, on demand only.
+    case sessionHandoffSummary
     case importCLISession
     case newSession
     case renameSession
@@ -86,6 +96,10 @@ enum Endpoint {
     case switchProfile
     case createProfile
     case providers
+    /// `GET /api/provider/quota` — subscription limits or credits for one
+    /// provider. `refresh` bypasses the server's 45 s probe cache; a cold probe
+    /// can take several seconds, so only explicit refresh gestures pass it.
+    case providerQuota(provider: String, refresh: Bool = false)
     case settings
     case updatesCheck
     case updatesApply
@@ -158,6 +172,16 @@ enum Endpoint {
             return "/api/session"
         case .sessionStatus:
             return "/api/session/status"
+        case .sessionUsage:
+            return "/api/session/usage"
+        case .sessionLineageReport:
+            return "/api/session/lineage/report"
+        case .sessionRecoveryAudit:
+            return "/api/session/recovery/audit"
+        case .sessionWorktreeStatus:
+            return "/api/session/worktree/status"
+        case .sessionHandoffSummary:
+            return "/api/session/handoff-summary"
         case .importCLISession:
             return "/api/session/import_cli"
         case .newSession:
@@ -304,6 +328,8 @@ enum Endpoint {
             return "/api/profile/create"
         case .providers:
             return "/api/providers"
+        case .providerQuota:
+            return "/api/provider/quota"
         case .settings:
             return "/api/settings"
         case .updatesCheck:
@@ -443,6 +469,14 @@ enum Endpoint {
             return items
         case let .sessionStatus(id):
             return [URLQueryItem(name: "session_id", value: id)]
+        case let .sessionUsage(id):
+            return [URLQueryItem(name: "session_id", value: id)]
+        case let .sessionLineageReport(id):
+            return [URLQueryItem(name: "session_id", value: id)]
+        case .sessionRecoveryAudit:
+            return []
+        case let .sessionWorktreeStatus(id):
+            return [URLQueryItem(name: "session_id", value: id)]
         case let .chatStream(streamID),
             let .chatCancel(streamID),
             let .chatStreamStatus(streamID):
@@ -550,6 +584,12 @@ enum Endpoint {
             return items
         case let .insights(days):
             return [URLQueryItem(name: "days", value: "\(days)")]
+        case let .providerQuota(provider, refresh):
+            var items = [URLQueryItem(name: "provider", value: provider)]
+            if refresh {
+                items.append(URLQueryItem(name: "refresh", value: "1"))
+            }
+            return items
         case let .skillContent(name, file):
             var items = [URLQueryItem(name: "name", value: name)]
             if let file {

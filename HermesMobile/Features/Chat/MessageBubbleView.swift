@@ -7,7 +7,8 @@ struct MessageBubbleView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     /// The skills this chat can draw as chips, published by `ChatView`.
-    @Environment(\.skillChipCatalog) private var skillChipCatalog
+    @Environment(\.composerChipCatalog) private var composerChipCatalog
+    @Environment(\.chatWorkspaceRoot) private var chatWorkspaceRoot
     @AppStorage(ChatTranscriptDisplaySettings.hidesAttachmentPathsKey) private var hidesAttachmentPaths = true
     @AppStorage(ChatTranscriptDisplaySettings.showsResponseSpeedKey) private var showsResponseSpeed = false
 
@@ -92,7 +93,10 @@ struct MessageBubbleView: View {
     }
 
     private var assistantMessageRow: some View {
-        let segments = TranscriptMediaParser.segments(in: messageText)
+        let segments = TranscriptMediaParser.segments(
+            in: messageText,
+            workspaceRoot: chatWorkspaceRoot
+        )
 
         return VStack(alignment: .leading, spacing: 6) {
             if showsAssistantTurnHeaderForThisMessage {
@@ -252,8 +256,8 @@ struct MessageBubbleView: View {
     /// A slug the server no longer knows resolves to nothing and stays plain
     /// text, which is the same rule the composer follows.
     private func userBubbleChips(in text: String) -> [ComposerChipToken] {
-        guard !skillChipCatalog.isEmpty else { return [] }
-        return ComposerChipTokenizer.tokens(in: text, catalog: skillChipCatalog, isComplete: true)
+        guard !composerChipCatalog.isEmpty else { return [] }
+        return ComposerChipTokenizer.tokens(in: text, catalog: composerChipCatalog, isComplete: true)
     }
 
     private var chipStyle: ComposerChipTextStyle {

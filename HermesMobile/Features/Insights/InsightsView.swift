@@ -21,7 +21,7 @@ struct InsightsView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        Task { await loadInsights() }
+                        Task { await refresh() }
                     } label: {
                         // The spinner marks a re-fetch of something already on
                         // screen. A first load has its own placeholder, and a
@@ -37,6 +37,16 @@ struct InsightsView: View {
             }
             .task(id: viewModel.selectedTimeframe) {
                 await loadInsights()
+            }
+            // A separate, unkeyed task on purpose: a cold account-limits probe
+            // can take several seconds upstream and the chart must not wait on
+            // it, and quota does not depend on the window. Keying it to the
+            // window would restart the probe on every picker change, wasting
+            // traffic and letting the restarted load supersede an in-flight
+            // explicit refresh. This load never passes `refresh` — that belongs
+            // to explicit gestures.
+            .task {
+                await viewModel.loadLimits()
             }
     }
 
@@ -68,6 +78,13 @@ struct InsightsView: View {
     private var loadedContent: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
+                if viewModel.showsLimits {
+                    ProviderLimitsSection(
+                        cards: viewModel.limitCards,
+                        isLoading: viewModel.isLoadingLimits
+                    )
+                }
+
                 Picker("Window", selection: $viewModel.selectedTimeframe) {
                     ForEach(AnalyticsTimeframe.allCases) { timeframe in
                         Text(timeframe.title).tag(timeframe)
@@ -119,8 +136,17 @@ struct InsightsView: View {
             .padding(.vertical, 12)
         }
         .refreshable {
-            await loadInsights()
+            await refresh()
         }
+    }
+
+    /// An explicit refresh gesture: the toolbar button and pull-to-refresh. Only
+    /// these bypass the server's 45 s quota cache. Both calls are started before
+    /// either is awaited so the slower one does not serialize behind the other.
+    private func refresh() async {
+        let limits = Task { await viewModel.loadLimits(refresh: true) }
+        await loadInsights()
+        await limits.value
     }
 
     private func loadInsights() async {
