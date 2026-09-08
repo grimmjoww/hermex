@@ -38,7 +38,11 @@ final class SessionDetailsViewModelTests: XCTestCase {
 
     func testLoadFetchesUsageAndPopulatesRows() async throws {
         let client = makeClient { request in
-            XCTAssertEqual(request.url?.path, "/api/session/usage")
+            // load() also fetches the sibling item-2 reads; only the usage
+            // request answers the usage payload here.
+            guard request.url?.path == "/api/session/usage" else {
+                return apiTestJSONResponse("{}", for: request)
+            }
             return apiTestJSONResponse("""
             {
               "input_tokens": 1200,
@@ -301,10 +305,8 @@ final class SessionDetailsViewModelTests: XCTestCase {
     }
 
     func testWorktreeSectionSkippedForNonWorktreeSessions() async throws {
-        var worktreeRequested = false
         let client = makeClient { request in
             if request.url?.path == "/api/session/worktree/status" {
-                worktreeRequested = true
                 // Server answers 400 "Session is not worktree-backed" for plain sessions.
                 return apiTestJSONResponse("{ \"error\": \"Session is not worktree-backed\" }", for: request, status: 400)
             }

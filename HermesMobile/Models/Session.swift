@@ -111,8 +111,14 @@ struct SessionLineageRow: Decodable, Equatable {
     let active: Bool?
     let archived: Bool?
 
+    // rawValues are the POST-conversion key spellings: the shared decoder's
+    // convertFromSnakeCase turns `session_id` into `sessionId` (lowercase d),
+    // so a bare `case sessionID` would never match and the field would
+    // silently decode to nil.
     enum CodingKeys: String, CodingKey {
-        case sessionID, role, title, source, startedAt, updatedAt, endReason, active, archived
+        case sessionID = "sessionId"
+        case role, title, source, startedAt, updatedAt
+        case endReason, active, archived
     }
 
     init(from decoder: Decoder) throws {
@@ -141,8 +147,11 @@ struct SessionLineageReport: Decodable, Equatable {
     let segments: [SessionLineageRow]
     let children: [SessionLineageRow]
 
+    // `tipSessionId`, not `tipSessionID` — see SessionLineageRow above.
     enum CodingKeys: String, CodingKey {
-        case found, lineageKey, tipSessionID, totalSegments, materializedSegments, manualReview, segments, children
+        case found, lineageKey
+        case tipSessionID = "tipSessionId"
+        case totalSegments, materializedSegments, manualReview, segments, children
     }
 
     init(from decoder: Decoder) throws {
@@ -221,6 +230,37 @@ struct SessionWorktreeStatus: Decodable, Equatable {
             upstream = nil
         }
     }
+
+    /// Empty snapshot for a 200 whose `status` object is missing or unusable —
+    /// the section renders, but shows nothing meaningful.
+    init() {
+        path = nil
+        exists = false
+        dirty = false
+        untrackedCount = 0
+        ahead = 0
+        behind = 0
+        aheadBehindAvailable = false
+        upstream = nil
+        lockedByStream = false
+        lockedByTerminal = false
+        listed = false
+    }
+}
+
+/// Wrapper for `GET /api/session/worktree/status` — the server nests the
+/// snapshot under a `status` key.
+struct SessionWorktreeStatusEnvelope: Decodable {
+    let status: SessionWorktreeStatus?
+
+    enum CodingKeys: String, CodingKey {
+        case status
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        status = try? container.decodeIfPresent(SessionWorktreeStatus.self, forKey: .status)
+    }
 }
 
 /// One repairable/unsafe finding from the recovery audit.
@@ -232,8 +272,10 @@ struct SessionRecoveryAuditItem: Decodable, Equatable, Hashable {
     let liveMessages: Int?
     let bakMessages: Int?
 
+    // rawValue "sessionId" — see SessionLineageRow above.
     enum CodingKeys: String, CodingKey {
-        case sessionID, kind, category, recommendation, liveMessages, bakMessages
+        case sessionID = "sessionId"
+        case kind, category, recommendation, liveMessages, bakMessages
     }
 
     init(from decoder: Decoder) throws {

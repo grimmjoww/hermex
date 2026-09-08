@@ -70,8 +70,13 @@ extension APIClient {
 
     /// Read-only git-worktree snapshot (`GET /api/session/worktree/status`).
     /// Non-worktree sessions get a 400 — callers treat that as "no section".
+    /// The server nests the snapshot under a `status` key.
     func sessionWorktreeStatus(id: String) async throws -> SessionWorktreeStatus {
-        try await send(endpoint: .sessionWorktreeStatus(id: id), method: "GET")
+        let envelope: SessionWorktreeStatusEnvelope = try await send(
+            endpoint: .sessionWorktreeStatus(id: id),
+            method: "GET"
+        )
+        return envelope.status ?? SessionWorktreeStatus()
     }
 
     /// Generates an on-demand activity summary (`POST /api/session/handoff-summary`).

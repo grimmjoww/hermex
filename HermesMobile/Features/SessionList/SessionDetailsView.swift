@@ -188,6 +188,11 @@ final class SessionDetailsViewModel {
     }
 
     private static func errorMessage(for error: Error) -> String {
+        // Parsed server message (`{"error": "…"}` → its text) first; raw body
+        // only as a fallback for non-JSON bodies.
+        if let apiError = error as? APIError, let message = apiError.serverMessage {
+            return message
+        }
         if case APIError.http(_, let body) = error, let body, !body.isEmpty {
             return body
         }
